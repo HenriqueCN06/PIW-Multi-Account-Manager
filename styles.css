@@ -1,0 +1,233 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    width: 100vw;
+    height: 100vh;
+    background-color: #0d1117;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Botões de Restauração */
+.restore-btn {
+    position: absolute;
+    z-index: 50;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #21262d; /* Cinza, levemente mais claro que o fundo */
+    color: #c9d1d9;
+    border: 2px solid #30363d;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: transform 0.2s, background-color 0.2s, color 0.2s;
+}
+
+.restore-btn.corner-1 { top: 20px; left: 20px; }
+.restore-btn.corner-2 { top: 20px; right: 20px; }
+.restore-btn.corner-3 { bottom: 20px; left: 20px; }
+.restore-btn.corner-4 { bottom: 20px; right: 20px; }
+
+.restore-btn:hover {
+    background-color: #30363d;
+    color: #ffffff;
+    transform: scale(1.1);
+}
+
+.restore-btn i {
+    pointer-events: none;
+}
+
+/* Grids Dinâmicos */
+.grid-container {
+    display: grid;
+    flex: 1;
+    width: 100%;
+    gap: 12px; /* Espaço entre as janelas */
+    padding: 12px; /* Espaço entre as janelas e a borda do app */
+    background-color: #161b22; /* Cor igual ao fundo das contas */
+    position: relative;
+    box-sizing: border-box;
+}
+
+.grid-1 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+.grid-2 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+}
+
+.grid-3-top-heavy, .grid-3-bottom-heavy {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+/* Mode 2: Alinhar no centro */
+.grid-2 .pos-0 { justify-content: flex-end; }
+.grid-2 .pos-1 { justify-content: flex-start; }
+
+/* Mode 3: 2 em cima, 1 embaixo centralizado */
+.grid-3-top-heavy .pos-0 { grid-column: 1 / span 2; grid-row: 1; justify-content: flex-end; }
+.grid-3-top-heavy .pos-1 { grid-column: 3 / span 2; grid-row: 1; justify-content: flex-start; }
+.grid-3-top-heavy .pos-2 { grid-column: 2 / span 2; grid-row: 2; justify-content: center; }
+
+/* Mode 3: 1 em cima centralizado, 2 embaixo */
+.grid-3-bottom-heavy .pos-0 { grid-column: 2 / span 2; grid-row: 1; justify-content: center; }
+.grid-3-bottom-heavy .pos-1 { grid-column: 1 / span 2; grid-row: 2; justify-content: flex-end; }
+.grid-3-bottom-heavy .pos-2 { grid-column: 3 / span 2; grid-row: 2; justify-content: flex-start; }
+
+.grid-4 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+/* Mode 4: Alinhar no centro */
+.grid-4 .pos-0 { justify-content: flex-end; }
+.grid-4 .pos-1 { justify-content: flex-start; }
+.grid-4 .pos-2 { justify-content: flex-end; }
+.grid-4 .pos-3 { justify-content: flex-start; }
+
+.panel-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #161b22; /* Fundo escuro igual a conta */
+    overflow: hidden;
+    container-type: size; /* Permite usar cqi e cqb nos filhos */
+    z-index: 1;
+}
+
+.panel {
+    display: flex;
+    flex-direction: column;
+    /* A mágica do CSS: calcula a maior largura possível que ainda caiba na altura, mantendo 16:9 */
+    width: min(100cqi, 100cqb * 16 / 9);
+    height: auto; /* A altura será calculada automaticamente pelo aspect-ratio */
+    aspect-ratio: 16 / 9; /* Mantém a proporção exata de 16:9 (widescreen padrão) */
+    background-color: #161b22;
+    border: 1px solid #30363d; /* Borda direto no painel para contorná-lo perfeitamente */
+    border-radius: 8px; /* Bordas arredondadas */
+    overflow: hidden; /* Corta qualquer excesso do webview */
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5); /* Sombrinha para dar profundidade */
+}
+
+/* Nomes para a View Transitions API poder animar a movimentação e redimensionamento */
+#panel-1 { view-transition-name: panel-1; }
+#panel-2 { view-transition-name: panel-2; }
+#panel-3 { view-transition-name: panel-3; }
+#panel-4 { view-transition-name: panel-4; }
+
+.panel-header {
+    width: 100%; /* Força a ocupar a largura total do painel */
+    background-color: #21262d;
+    color: #c9d1d9;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #30363d;
+    user-select: none;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zoom-btn, .maximize-btn, .close-btn, .refresh-btn, .clear-cache-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: #58a6ff;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 0 4px;
+    transition: color 0.2s;
+}
+
+.zoom-btn:hover, .maximize-btn:hover, .refresh-btn:hover, .clear-cache-btn:hover {
+    color: #79c0ff;
+}
+
+.close-btn {
+    color: #f85149;
+}
+
+.close-btn:hover {
+    color: #ff7b72;
+}
+
+webview {
+    flex: 1;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: #000;
+}
+
+/* Classe para Maximizar */
+.panel-wrapper.maximized {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    justify-content: center !important;
+    grid-column: 1 / -1 !important;
+    grid-row: 1 / -1 !important;
+}
+
+/* Setas de navegação no modo Maximizado */
+.max-nav-arrow {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 60px;
+    height: 100px;
+    background-color: rgba(33, 38, 45, 0.5);
+    color: #c9d1d9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1000; /* Acima do painel maximizado (999) */
+    border-radius: 8px;
+    transition: background-color 0.2s, color 0.2s, transform 0.2s;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.max-nav-arrow:hover {
+    background-color: rgba(48, 54, 61, 0.9);
+    color: #ffffff;
+    transform: translateY(-50%) scale(1.05);
+}
+
+#max-nav-left {
+    left: 20px;
+}
+
+#max-nav-right {
+    right: 20px;
+}

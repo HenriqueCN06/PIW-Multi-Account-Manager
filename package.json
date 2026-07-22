@@ -1,0 +1,24 @@
+{
+  "name": "piw-multi-account-manager",
+  "version": "1.0.0",
+  "description": "Gerenciador de Multi Contas para PIW",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win"
+  },
+  "author": "Voce",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "electron": "^43.1.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.piw.multiaccount",
+    "productName": "PIW Multi Account",
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

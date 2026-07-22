@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIW Multi Account Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="grid-container grid-4" id="main-grid">
+        <!-- Conta 1 -->
+        <div class="panel-wrapper" id="panel-1">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Conta 1</span>
+                    <div class="header-controls">
+                        <button class="clear-cache-btn" data-target="webview-1" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
+                        <button class="refresh-btn" data-target="webview-1" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-out" data-target="webview-1" title="Diminuir Zoom"><i data-lucide="zoom-out" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-in" data-target="webview-1" title="Aumentar Zoom"><i data-lucide="zoom-in" width="16" height="16"></i></button>
+                        <button class="maximize-btn" data-target="panel-1" title="Maximizar"><i data-lucide="maximize" width="16" height="16"></i></button>
+                        <button class="close-btn" data-target="panel-1" data-id="1" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
+                    </div>
+                </div>
+                <webview id="webview-1" src="https://poke.idleworld.online" partition="persist:conta1" allowpopups></webview>
+            </div>
+        </div>
+        
+        <!-- Conta 2 -->
+        <div class="panel-wrapper" id="panel-2">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Conta 2</span>
+                    <div class="header-controls">
+                        <button class="clear-cache-btn" data-target="webview-2" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
+                        <button class="refresh-btn" data-target="webview-2" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-out" data-target="webview-2" title="Diminuir Zoom"><i data-lucide="zoom-out" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-in" data-target="webview-2" title="Aumentar Zoom"><i data-lucide="zoom-in" width="16" height="16"></i></button>
+                        <button class="maximize-btn" data-target="panel-2" title="Maximizar"><i data-lucide="maximize" width="16" height="16"></i></button>
+                        <button class="close-btn" data-target="panel-2" data-id="2" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
+                    </div>
+                </div>
+                <webview id="webview-2" src="https://poke.idleworld.online" partition="persist:conta2" allowpopups></webview>
+            </div>
+        </div>
+        
+        <!-- Conta 3 -->
+        <div class="panel-wrapper" id="panel-3">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Conta 3</span>
+                    <div class="header-controls">
+                        <button class="clear-cache-btn" data-target="webview-3" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
+                        <button class="refresh-btn" data-target="webview-3" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-out" data-target="webview-3" title="Diminuir Zoom"><i data-lucide="zoom-out" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-in" data-target="webview-3" title="Aumentar Zoom"><i data-lucide="zoom-in" width="16" height="16"></i></button>
+                        <button class="maximize-btn" data-target="panel-3" title="Maximizar"><i data-lucide="maximize" width="16" height="16"></i></button>
+                        <button class="close-btn" data-target="panel-3" data-id="3" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
+                    </div>
+                </div>
+                <webview id="webview-3" src="https://poke.idleworld.online" partition="persist:conta3" allowpopups></webview>
+            </div>
+        </div>
+        
+        <!-- Conta 4 -->
+        <div class="panel-wrapper" id="panel-4">
+            <div class="panel">
+                <div class="panel-header">
+                    <span>Conta 4</span>
+                    <div class="header-controls">
+                        <button class="clear-cache-btn" data-target="webview-4" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
+                        <button class="refresh-btn" data-target="webview-4" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-out" data-target="webview-4" title="Diminuir Zoom"><i data-lucide="zoom-out" width="16" height="16"></i></button>
+                        <button class="zoom-btn zoom-in" data-target="webview-4" title="Aumentar Zoom"><i data-lucide="zoom-in" width="16" height="16"></i></button>
+                        <button class="maximize-btn" data-target="panel-4" title="Maximizar"><i data-lucide="maximize" width="16" height="16"></i></button>
+                        <button class="close-btn" data-target="panel-4" data-id="4" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
+                    </div>
+                </div>
+                <webview id="webview-4" src="https://poke.idleworld.online" partition="persist:conta4" allowpopups></webview>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navegação de Maximizado -->
+    <div id="max-nav-left" class="max-nav-arrow" title="Conta Anterior" style="display: none;">
+        <i data-lucide="chevron-left" width="48" height="48"></i>
+    </div>
+    <div id="max-nav-right" class="max-nav-arrow" title="Próxima Conta" style="display: none;">
+        <i data-lucide="chevron-right" width="48" height="48"></i>
+    </div>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="script.js"></script>
+</body>
+</html>
