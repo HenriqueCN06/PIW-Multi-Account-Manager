@@ -81,7 +81,135 @@
         </div>
     </div>
 
-    <!-- Navegação de Maximizado -->
+    <!-- IV Toggle Button -->
+    <button id="iv-toggle-btn" title="Abrir Calculadora de IV">
+        <i data-lucide="calculator" width="24" height="24"></i>
+    </button>
+
+    <!-- IV Calculator Panel -->
+    <div id="iv-panel" class="hidden">
+        <div class="iv-header">
+            <img id="iv-sprite" src="" alt="Sprite" style="display: none;">
+            <div class="iv-title-box">
+                <div class="iv-name-row">
+                    <span id="iv-name">Pokémon</span>
+                    <span id="iv-account-name">Conta</span>
+                </div>
+                <div id="iv-types" class="iv-types-container"></div>
+            </div>
+            <button id="iv-close-btn"><i data-lucide="x" width="16" height="16"></i></button>
+        </div>
+
+        <div class="iv-top-stats">
+            <div class="iv-box">
+                <label>NÍVEL</label>
+                <input type="number" id="iv-inp-nivel" value="1">
+            </div>
+            <div class="iv-box">
+                <label>QUALIDADE</label>
+                <input type="number" step="0.01" id="iv-inp-qualidade" value="1.0">
+            </div>
+            <div class="iv-box">
+                <label>IV TOTAL</label>
+                <div class="iv-val"><span id="iv-val-total" class="iv-cyan">0</span><small>/192</small></div>
+            </div>
+            <div class="iv-box">
+                <label>PODER ESTIMADO</label>
+                <div class="iv-val iv-yellow" id="iv-val-poder">0</div>
+            </div>
+        </div>
+
+        <div class="iv-potential-box">
+            <div class="iv-ring-wrapper">
+                <div class="iv-ring" id="iv-ring">
+                    <span id="iv-ring-txt">0%</span>
+                </div>
+            </div>
+            <div class="iv-potential-info">
+                <strong id="iv-pot-title">Normal</strong>
+                <p id="iv-pot-desc">Captura a tela...</p>
+            </div>
+        </div>
+
+        <div class="iv-section-title">
+            ATRIBUTOS E IV POR STAT <span class="iv-sec-desc" id="iv-sec-desc"></span>
+        </div>
+
+        <div class="iv-stats-grid">
+            <!-- HP -->
+            <div class="iv-stat-card">
+                <div class="iv-stat-head">
+                    <span class="iv-stat-name iv-color-hp">HP</span>
+                    <span class="iv-stat-val"><span id="iv-hp-val" class="iv-color-hp">0.0</span>/32</span>
+                </div>
+                <div class="iv-progress-bar"><div id="iv-hp-bar" class="iv-bg-hp" style="width: 0%"></div></div>
+                <div class="iv-stat-inp-row"><label>atual</label><input type="number" id="iv-inp-hp-atual" value="0"></div>
+                <div class="iv-stat-inp-row"><label>base</label><input type="number" id="iv-inp-hp-base" value="0"></div>
+            </div>
+            <!-- ATK -->
+            <div class="iv-stat-card">
+                <div class="iv-stat-head">
+                    <span class="iv-stat-name iv-color-atk">ATK</span>
+                    <span class="iv-stat-val"><span id="iv-atk-val" class="iv-color-atk">0.0</span>/32</span>
+                </div>
+                <div class="iv-progress-bar"><div id="iv-atk-bar" class="iv-bg-atk" style="width: 0%"></div></div>
+                <div class="iv-stat-inp-row"><label>atual</label><input type="number" id="iv-inp-atk-atual" value="0"></div>
+                <div class="iv-stat-inp-row"><label>base</label><input type="number" id="iv-inp-atk-base" value="0"></div>
+            </div>
+            <!-- DEF -->
+            <div class="iv-stat-card">
+                <div class="iv-stat-head">
+                    <span class="iv-stat-name iv-color-def">DEF</span>
+                    <span class="iv-stat-val"><span id="iv-def-val" class="iv-color-def">0.0</span>/32</span>
+                </div>
+                <div class="iv-progress-bar"><div id="iv-def-bar" class="iv-bg-def" style="width: 0%"></div></div>
+                <div class="iv-stat-inp-row"><label>atual</label><input type="number" id="iv-inp-def-atual" value="0"></div>
+                <div class="iv-stat-inp-row"><label>base</label><input type="number" id="iv-inp-def-base" value="0"></div>
+            </div>
+            <!-- SPA -->
+            <div class="iv-stat-card">
+                <div class="iv-stat-head">
+                    <span class="iv-stat-name iv-color-spa">SPA</span>
+                    <span class="iv-stat-val"><span id="iv-spa-val" class="iv-color-spa">0.0</span>/32</span>
+                </div>
+                <div class="iv-progress-bar"><div id="iv-spa-bar" class="iv-bg-spa" style="width: 0%"></div></div>
+                <div class="iv-stat-inp-row"><label>atual</label><input type="number" id="iv-inp-spa-atual" value="0"></div>
+                <div class="iv-stat-inp-row"><label>base</label><input type="number" id="iv-inp-spa-base" value="0"></div>
+            </div>
+            <!-- SPD -->
+            <div class="iv-stat-card">
+                <div class="iv-stat-head">
+                    <span class="iv-stat-name iv-color-spd">SPD</span>
+                    <span class="iv-stat-val"><span id="iv-spd-val" class="iv-color-spd">0.0</span>/32</span>
+                </div>
+                <div class="iv-progress-bar"><div id="iv-spd-bar" class="iv-bg-spd" style="width: 0%"></div></div>
+                <div class="iv-stat-inp-row"><label>atual</label><input type="number" id="iv-inp-spd-atual" value="0"></div>
+                <div class="iv-stat-inp-row"><label>base</label><input type="number" id="iv-inp-spd-base" value="0"></div>
+            </div>
+            <!-- VEL -->
+            <div class="iv-stat-card">
+                <div class="iv-stat-head">
+                    <span class="iv-stat-name iv-color-vel">VEL</span>
+                    <span class="iv-stat-val"><span id="iv-vel-val" class="iv-color-vel">0.0</span>/32</span>
+                </div>
+                <div class="iv-progress-bar"><div id="iv-vel-bar" class="iv-bg-vel" style="width: 0%"></div></div>
+                <div class="iv-stat-inp-row"><label>atual</label><input type="number" id="iv-inp-vel-atual" value="0"></div>
+                <div class="iv-stat-inp-row"><label>base</label><input type="number" id="iv-inp-vel-base" value="0"></div>
+            </div>
+        </div>
+
+        <div class="iv-section-title">
+            <i data-lucide="swords" width="12" height="12"></i> GOLPES
+        </div>
+        <div id="iv-moves-list" class="iv-moves-list">
+            <!-- Moves rendered here -->
+        </div>
+
+        <div class="iv-footer">
+            <span id="iv-footer-power">Poder no jogo: -</span>
+            <span class="iv-footer-hint">edite qualquer campo pra recalcular</span>
+        </div>
+    </div>
     <div id="max-nav-left" class="max-nav-arrow" title="Conta Anterior" style="display: none;">
         <i data-lucide="chevron-left" width="48" height="48"></i>
     </div>
@@ -91,5 +219,6 @@
 
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="script.js"></script>
+    <script src="iv-manager.js"></script>
 </body>
 </html>

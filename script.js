@@ -24,19 +24,19 @@ function updateMaxNavArrows() {
         return;
     }
 
-    if (idx > 0) {
-        maxNavLeft.style.display = 'flex';
-        maxNavLeft.onclick = () => switchMaximizedAccount(activeAccounts[idx - 1]);
-    } else {
-        maxNavLeft.style.display = 'none';
-    }
+    maxNavLeft.style.display = 'flex';
+    maxNavLeft.onclick = () => {
+        let prevIdx = idx - 1;
+        if (prevIdx < 0) prevIdx = activeAccounts.length - 1;
+        switchMaximizedAccount(activeAccounts[prevIdx]);
+    };
 
-    if (idx < activeAccounts.length - 1) {
-        maxNavRight.style.display = 'flex';
-        maxNavRight.onclick = () => switchMaximizedAccount(activeAccounts[idx + 1]);
-    } else {
-        maxNavRight.style.display = 'none';
-    }
+    maxNavRight.style.display = 'flex';
+    maxNavRight.onclick = () => {
+        let nextIdx = idx + 1;
+        if (nextIdx >= activeAccounts.length) nextIdx = 0;
+        switchMaximizedAccount(activeAccounts[nextIdx]);
+    };
 }
 
 function updateLayout() {
@@ -85,13 +85,21 @@ function triggerLayoutUpdate() {
 
 function restoreAccount(id) {
     if (!activeAccounts.includes(id)) {
-        activeAccounts.push(id);
-        activeAccounts.sort((a, b) => a - b); // Mantém a ordem 1, 2, 3, 4
-        triggerLayoutUpdate();
-        
-        // Remove botão da doca
-        const btn = document.getElementById('restore-btn-' + id);
-        if (btn) btn.remove();
+        const finalizeRestore = () => {
+            activeAccounts.push(id);
+            activeAccounts.sort((a, b) => a - b); // Mantém a ordem 1, 2, 3, 4
+            updateLayout();
+            
+            // Remove botão da doca
+            const btn = document.getElementById('restore-btn-' + id);
+            if (btn) btn.remove();
+        };
+
+        if (document.startViewTransition) {
+            document.startViewTransition(() => finalizeRestore());
+        } else {
+            finalizeRestore();
+        }
     }
 }
 
@@ -139,6 +147,7 @@ function closeAccount(id) {
             // Adiciona botão no canto respectivo da tela
             const btn = document.createElement('button');
             btn.className = 'restore-btn corner-' + id;
+            btn.style.viewTransitionName = 'restore-btn-' + id;
             btn.id = 'restore-btn-' + id;
             btn.title = 'Restaurar Conta ' + id;
             btn.innerHTML = '<i data-lucide="plus" width="20" height="20"></i>';
