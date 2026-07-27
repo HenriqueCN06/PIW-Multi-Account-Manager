@@ -3,12 +3,23 @@ const ivToggleBtn = document.getElementById('iv-toggle-btn');
 const ivPanel = document.getElementById('iv-panel');
 const ivCloseBtn = document.getElementById('iv-close-btn');
 
+let ivWatcherActive = false;
+
+function setWatcherState(state) {
+    ivWatcherActive = state;
+    document.querySelectorAll('webview').forEach(wv => {
+        try { wv.executeJavaScript(`if(window.toggleIVWatcher) window.toggleIVWatcher(${state});`); } catch(e){}
+    });
+}
+
 ivToggleBtn.addEventListener('click', () => {
-    ivPanel.classList.toggle('hidden');
+    const isHidden = ivPanel.classList.toggle('hidden');
+    setWatcherState(!isHidden);
 });
 
 ivCloseBtn.addEventListener('click', () => {
     ivPanel.classList.add('hidden');
+    setWatcherState(false);
 });
 
 // Lógica para arrastar o painel
@@ -20,6 +31,7 @@ ivHeader.addEventListener('mousedown', (e) => {
     if (e.target.closest('.iv-close-btn') || e.target.closest('button')) return;
     isDragging = true;
     
+    ivPanel.style.transition = 'none';
     const rect = ivPanel.getBoundingClientRect();
     ivPanel.style.transform = 'none';
     ivPanel.style.left = rect.left + 'px';
@@ -42,6 +54,7 @@ document.addEventListener('mouseup', () => {
     if (isDragging) {
         isDragging = false;
         ivHeader.style.cursor = 'grab';
+        ivPanel.style.transition = '';
     }
 });
 ivHeader.style.cursor = 'grab';
@@ -146,19 +159,31 @@ const injectScriptCode = `
         }
     }
 
-    setInterval(checkTooltip, 200);
+    window.__ivInterval = null;
+    window.toggleIVWatcher = (state) => {
+        if (state) {
+            if (!window.__ivInterval) window.__ivInterval = setInterval(checkTooltip, 200);
+        } else {
+            if (window.__ivInterval) {
+                clearInterval(window.__ivInterval);
+                window.__ivInterval = null;
+            }
+            lastText = "";
+        }
+    };
 })();
 `;
 
-// Injeta em todas as webviews ativas e nas que carregarem no futuro
-document.querySelectorAll('webview').forEach(wv => {
-    const inject = () => wv.executeJavaScript(injectScriptCode).catch(() => {});
-    wv.addEventListener('dom-ready', inject);
-    wv.addEventListener('did-finish-load', inject);
-    
     // Força injeção contínua para garantir que rode caso os eventos falhem
-    setInterval(inject, 2000);
-});
+    setInterval(() => {
+        document.querySelectorAll('webview').forEach(wv => {
+            if (!wv.isLoading()) {
+                wv.executeJavaScript(injectScriptCode).then(() => {
+                    wv.executeJavaScript(`if(window.toggleIVWatcher) window.toggleIVWatcher(${ivWatcherActive});`);
+                }).catch(() => {});
+            }
+        });
+    }, 2000);
 
 // Escuta mensagens do webview
 document.querySelectorAll('webview').forEach((wv, index) => {
@@ -288,6 +313,8 @@ function processHover(text, htmlName, sprite, accName, creature) {
             const mName = m.name || m.moveName || m.move || m;
             const mPower = m.power || m.basePower || m.damage || m.dmg || '-';
             const mType = m.type || m.element || 'normal';
+            const mCategory = m.category || '-';
+            const mLevel = m.learnLevel !== undefined ? m.learnLevel : '-';
             
             const typeColors = {
                 grass: '#78c850', fire: '#f08030', water: '#6890f0', bug: '#a8b820',
@@ -296,12 +323,23 @@ function processHover(text, htmlName, sprite, accName, creature) {
                 ghost: '#705898', ice: '#98d8d8', dragon: '#7038f8', dark: '#705848', steel: '#b8b8d0', flying: '#a890f0'
             };
             const c = typeColors[mType.toLowerCase()] || '#888';
+            
+            let catTag = '';
+            let powerColor = '';
+            if (mCategory !== '-') {
+                const shortCat = mCategory === 'SPECIAL' ? 'SP' : (mCategory === 'PHYSICAL' ? 'PH' : mCategory);
+                catTag = `<span class="iv-move-category">${shortCat}</span>`;
+                if (mCategory === 'SPECIAL') powerColor = 'color: #58a6ff;';
+                else if (mCategory === 'PHYSICAL') powerColor = 'color: #f0883e;';
+                else powerColor = 'color: #8b949e;'; // Status moves
+            }
 
             movesList.innerHTML += `
                 <div class="iv-move-row">
+                    <span class="iv-move-level">Lv ${mLevel}</span>
                     <span class="iv-type-badge" style="background-color: ${c}">${mType}</span>
-                    <span class="iv-move-name">${mName}</span>
-                    <span class="iv-move-power">${mPower}</span>
+                    <span class="iv-move-name">${mName}${catTag}</span>
+                    <span class="iv-move-power" style="${powerColor}">${mPower}</span>
                 </div>
             `;
         });
