@@ -12,7 +12,11 @@
         <div class="panel-wrapper" id="panel-1">
             <div class="panel">
                 <div class="panel-header">
-                    <span>Conta 1</span>
+                    <div class="panel-title-area">
+                        <span class="panel-title">Conta 1</span>
+                        <input type="text" class="login-input login-email" placeholder="Email / Usuário" data-acc="1">
+                        <input type="password" class="login-input login-password" placeholder="Senha" data-acc="1">
+                    </div>
                     <div class="header-controls">
                         <button class="clear-cache-btn" data-target="webview-1" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
                         <button class="refresh-btn" data-target="webview-1" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
@@ -22,7 +26,7 @@
                         <button class="close-btn" data-target="panel-1" data-id="1" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
                     </div>
                 </div>
-                <webview id="webview-1" src="https://poke.idleworld.online" partition="persist:conta1" allowpopups></webview>
+                <webview id="webview-1" src="https://poke.idleworld.online/login" partition="persist:conta1" allowpopups></webview>
             </div>
         </div>
         
@@ -30,7 +34,11 @@
         <div class="panel-wrapper" id="panel-2">
             <div class="panel">
                 <div class="panel-header">
-                    <span>Conta 2</span>
+                    <div class="panel-title-area">
+                        <span class="panel-title">Conta 2</span>
+                        <input type="text" class="login-input login-email" placeholder="Email / Usuário" data-acc="2">
+                        <input type="password" class="login-input login-password" placeholder="Senha" data-acc="2">
+                    </div>
                     <div class="header-controls">
                         <button class="clear-cache-btn" data-target="webview-2" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
                         <button class="refresh-btn" data-target="webview-2" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
@@ -40,7 +48,7 @@
                         <button class="close-btn" data-target="panel-2" data-id="2" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
                     </div>
                 </div>
-                <webview id="webview-2" src="https://poke.idleworld.online" partition="persist:conta2" allowpopups></webview>
+                <webview id="webview-2" src="https://poke.idleworld.online/login" partition="persist:conta2" allowpopups></webview>
             </div>
         </div>
         
@@ -48,7 +56,11 @@
         <div class="panel-wrapper" id="panel-3">
             <div class="panel">
                 <div class="panel-header">
-                    <span>Conta 3</span>
+                    <div class="panel-title-area">
+                        <span class="panel-title">Conta 3</span>
+                        <input type="text" class="login-input login-email" placeholder="Email / Usuário" data-acc="3">
+                        <input type="password" class="login-input login-password" placeholder="Senha" data-acc="3">
+                    </div>
                     <div class="header-controls">
                         <button class="clear-cache-btn" data-target="webview-3" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
                         <button class="refresh-btn" data-target="webview-3" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
@@ -58,7 +70,7 @@
                         <button class="close-btn" data-target="panel-3" data-id="3" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
                     </div>
                 </div>
-                <webview id="webview-3" src="https://poke.idleworld.online" partition="persist:conta3" allowpopups></webview>
+                <webview id="webview-3" src="https://poke.idleworld.online/login" partition="persist:conta3" allowpopups></webview>
             </div>
         </div>
         
@@ -66,7 +78,11 @@
         <div class="panel-wrapper" id="panel-4">
             <div class="panel">
                 <div class="panel-header">
-                    <span>Conta 4</span>
+                    <div class="panel-title-area">
+                        <span class="panel-title">Conta 4</span>
+                        <input type="text" class="login-input login-email" placeholder="Email / Usuário" data-acc="4">
+                        <input type="password" class="login-input login-password" placeholder="Senha" data-acc="4">
+                    </div>
                     <div class="header-controls">
                         <button class="clear-cache-btn" data-target="webview-4" title="Limpar Cache"><i data-lucide="trash-2" width="16" height="16"></i></button>
                         <button class="refresh-btn" data-target="webview-4" title="Atualizar"><i data-lucide="refresh-cw" width="16" height="16"></i></button>
@@ -76,7 +92,7 @@
                         <button class="close-btn" data-target="panel-4" data-id="4" title="Fechar Conta"><i data-lucide="x" width="16" height="16"></i></button>
                     </div>
                 </div>
-                <webview id="webview-4" src="https://poke.idleworld.online" partition="persist:conta4" allowpopups></webview>
+                <webview id="webview-4" src="https://poke.idleworld.online/login" partition="persist:conta4" allowpopups></webview>
             </div>
         </div>
     </div>
@@ -225,5 +241,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="script.js"></script>
     <script src="iv-manager.js"></script>
+    <script src="login-manager.js"></script>
 </body>
 </html>

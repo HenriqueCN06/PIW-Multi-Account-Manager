@@ -137,12 +137,35 @@ body, html {
     color: #c9d1d9;
     font-size: 12px;
     font-weight: 600;
-    padding: 4px 10px;
+    padding: 6px 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: grab;
     border-bottom: 1px solid #30363d;
-    user-select: none;
+    box-sizing: border-box; /* Garante que padding não estoure o width */
+}
+
+.panel-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.login-input {
+    background-color: #0d1117;
+    border: 1px solid #30363d;
+    color: #c9d1d9;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    width: 110px;
+    transition: border-color 0.2s;
+}
+
+.login-input:focus {
+    outline: none;
+    border-color: #58a6ff;
 }
 
 .header-controls {
