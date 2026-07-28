@@ -20,8 +20,6 @@ async function loadCredentials() {
         if (savedPass) {
             document.querySelector(`.login-password[data-acc="${i}"]`).value = savedPass;
         }
-        
-        if (window.api) window.api.log(`[Host] Conta ${i} carregou credenciais: Email=${!!savedEmail}, Senha=${!!savedPass}`);
     }
 }
 
@@ -49,20 +47,13 @@ function injectAutoLogin(wv, accId) {
     const email = document.querySelector(`.login-email[data-acc="${accId}"]`).value;
     const senha = document.querySelector(`.login-password[data-acc="${accId}"]`).value;
 
-    if (window.api) window.api.log(`[Host Conta ${accId}] injectAutoLogin chamado. url=${wv.getURL()}`);
-
     if (!email || !senha) {
-        if (window.api) window.api.log(`[Host Conta ${accId}] Abortado: campos de email ou senha vazios no cabeçalho.`);
         return; 
     }
 
-    if (window.api) window.api.log(`[Host Conta ${accId}] Injetando script no webview...`);
-
     const code = `
     (async () => {
-        console.log("[PIW-AUTO-LOGIN] Injetado com sucesso na página!");
         if (window.__loginWatch) {
-            console.log("[PIW-AUTO-LOGIN] Já existe um watcher rodando, abortando.");
             return;
         }
         
@@ -85,13 +76,7 @@ function injectAutoLogin(wv, accId) {
             const p = inputs.find(i => i.autocomplete === 'current-password' || i.type === 'password' || i.name === 'password' || i.placeholder?.toLowerCase().includes('senha') || i.placeholder?.toLowerCase().includes('pass'));
             const b = findBtn();
             
-            if (t === 0 || t === 10 || t === 25 || t === 39) {
-                console.log("[PIW-AUTO-LOGIN] Tentativa " + t + " - Achou Usuário: " + !!u + ", Senha: " + !!p + ", Botão: " + !!b);
-                if (b) console.log("[PIW-AUTO-LOGIN] Botão detectado:", b.outerHTML.substring(0, 50));
-            }
-            
             if (u && p && b) {
-                console.log("[PIW-AUTO-LOGIN] Campos encontrados! Preenchendo dados...");
                 const EMAIL = ${JSON.stringify(email)};
                 const SENHA = ${JSON.stringify(senha)};
                 
@@ -115,22 +100,16 @@ function injectAutoLogin(wv, accId) {
                     if (!bb || ++ciclos > 1200) { 
                         clearInterval(w); 
                         window.__loginWatch = false; 
-                        console.log("[PIW-AUTO-LOGIN] Desistindo da espera do Cloudflare (timeout ou botão sumiu).");
                         return; 
                     }
                     
                     const ok = preenche();
                     const tk = document.querySelector('input[name=cf-turnstile-response]');
                     
-                    if (ciclos % 10 === 0) {
-                        console.log("[PIW-AUTO-LOGIN] Aguardando Cloudflare... Token gerado: " + !!(tk && tk.value));
-                    }
-                    
                     // Se estiver tudo preenchido E o token do turnstile estiver pronto E botão não estiver desabilitado
                     if (ok && (!tk || tk.value) && !bb.disabled) { 
                         clearInterval(w); 
                         window.__loginWatch = false; 
-                        console.log("[PIW-AUTO-LOGIN] Tudo pronto! Clicando em Entrar!");
                         bb.click(); 
                     }
                 }, 500);
@@ -139,7 +118,6 @@ function injectAutoLogin(wv, accId) {
             }
             await new Promise(r => setTimeout(r, 300));
         }
-        console.log("[PIW-AUTO-LOGIN] Desistiu após 40 tentativas de encontrar os campos na página.");
     })();
     `;
     
@@ -148,35 +126,24 @@ function injectAutoLogin(wv, accId) {
 
 // Configura os listeners nas webviews
 function setupAutoLoginWatchers() {
-    if (window.api) window.api.log(`[Host] Configurando Watchers nas Webviews...`);
     document.querySelectorAll('webview').forEach((wv, index) => {
         const accId = index + 1;
         const inject = () => injectAutoLogin(wv, accId);
         
         wv.addEventListener('dom-ready', () => {
-            if (window.api) window.api.log(`[Host Conta ${accId}] dom-ready disparado.`);
             inject();
         });
         wv.addEventListener('did-finish-load', () => {
-            if (window.api) window.api.log(`[Host Conta ${accId}] did-finish-load disparado.`);
             inject();
-        });
-        
-        wv.addEventListener('console-message', (e) => {
-            if (e.message.includes('[PIW-AUTO-LOGIN]') && window.api) {
-                window.api.log(`[Conta ${accId}] ${e.message}`);
-            }
         });
         
         // Se a webview já carregou (ex: hot-reload), injeta imediatamente
         try {
             if (!wv.isLoading()) {
-                if (window.api) window.api.log(`[Host Conta ${accId}] Webview já carregada, injetando...`);
                 inject();
             }
         } catch (e) {
-            // Ignora o erro. É comum o isLoading() falhar se a webview ainda estiver sendo criada pelo Electron.
-            if (window.api) window.api.log(`[Host Conta ${accId}] Aguardando inicialização da webview...`);
+            // Ignora o erro se a webview não estiver totalmente inicializada
         }
     });
 }
