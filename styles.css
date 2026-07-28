@@ -343,7 +343,7 @@ webview {
     gap: 8px;
 }
 
-.iv-info-tooltip {
+.iv-info-tooltip, .login-info-tooltip {
     color: #8b949e;
     cursor: help;
     display: flex;
@@ -351,7 +351,7 @@ webview {
     transition: color 0.2s;
 }
 
-.iv-info-tooltip:hover {
+.iv-info-tooltip:hover, .login-info-tooltip:hover {
     color: #58a6ff;
 }
 
