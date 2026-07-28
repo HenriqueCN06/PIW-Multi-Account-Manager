@@ -12,7 +12,15 @@ const injectPokedexFilter = `
         const dexHead = document.querySelector('.dex-head');
         if (dexHead) {
             const dexWindow = dexHead.parentElement;
-            if (dexWindow && !dexWindow.__pokedexFilterSetup) {
+            
+            // Lógica para salvar a memória de capturados sempre que a pokedex existir
+            const caughtCells = dexWindow.querySelectorAll('.dex-cell.caught .dex-cell-name');
+            if (caughtCells.length > 0) {
+                const caughtList = Array.from(caughtCells).map(el => el.innerText.trim());
+                localStorage.setItem('caught_pokemons', JSON.stringify(caughtList));
+            }
+
+            if (!dexWindow.__pokedexFilterSetup) {
                 const controls = dexWindow.querySelector('.dex-controls');
                 if (controls && !controls.querySelector('.custom-dex-filter')) {
                     dexWindow.__pokedexFilterSetup = true;

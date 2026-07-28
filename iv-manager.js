@@ -195,6 +195,11 @@ document.querySelectorAll('webview').forEach((wv, index) => {
                 if (data.type === 'debug_inj') {
                     return;
                 }
+                if (data.type === 'debug_map_full') {
+                    window.api.log("MAP FULL DUMP:");
+                    window.api.log(data.html);
+                    return;
+                }
                 if (data.type === 'debug_info') {
                     return;
                 }
