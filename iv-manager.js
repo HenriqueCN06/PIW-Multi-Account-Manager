@@ -171,6 +171,7 @@ const injectScriptCode = `
             lastText = "";
         }
     };
+
 })();
 `;
 
