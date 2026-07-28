@@ -144,11 +144,14 @@
             </div>
             <div class="iv-box">
                 <label>IV TOTAL</label>
-                <div class="iv-val"><span id="iv-val-total" class="iv-cyan">0</span><small>/192</small></div>
+                <div style="position:relative;">
+                    <input type="text" id="iv-val-total" value="0" style="padding-right: 32px;">
+                    <span style="position:absolute; right:6px; top:6px; color:#8b949e; font-size:11px; font-weight:normal; pointer-events:none;">/192</span>
+                </div>
             </div>
             <div class="iv-box">
-                <label>PODER ESTIMADO</label>
-                <div class="iv-val iv-yellow" id="iv-val-poder">0</div>
+                <label>PODER</label>
+                <input type="text" id="iv-val-poder" value="0">
             </div>
         </div>
 
@@ -239,7 +242,6 @@
         </div>
 
         <div class="iv-footer">
-            <span id="iv-footer-power">Poder no jogo: -</span>
             <span class="iv-footer-hint">edite qualquer campo pra recalcular</span>
         </div>
     </div>

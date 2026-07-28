@@ -246,6 +246,8 @@ function extractDataFromText(text) {
         spa: num(/SpA\s+([\d.,]+)/i),
         spd: num(/SpD\s+([\d.,]+)/i),
         vel: num(/(?:Vel|Spe)\s+([\d.,]+)/i),
+        ivTotal: num(/IV\s+(\d+)\s*\/\s*192/i),
+        poder: num(/(?:Poder|Power)\s+([\d.,]+)/i),
     };
 }
 
@@ -368,7 +370,7 @@ function recalcIVs() {
         }
         
         let iv = Math.min(MAX_IV_INDIVIDUAL, Math.max(0, ivFloat));
-        somaIvs += iv;
+        somaIvs += Math.round(iv);
         
         // Calcular poder exato
         const calcPoder = Math.round((base + 2 * iv) * (nivel / 100) * Math.pow(qualidade, EXPOENTES[k]));
@@ -384,13 +386,19 @@ function recalcIVs() {
     
     somaPoder = Math.round(somaPoder * qualidade);
 
+    let totalReal = Math.round(somaIvs);
+    let poderReal = somaPoder;
+    if (currentExtractedData) {
+        if (currentExtractedData.ivTotal > 0) totalReal = currentExtractedData.ivTotal;
+        if (currentExtractedData.poder > 0) poderReal = currentExtractedData.poder;
+    }
+
     // Update Totals
-    document.getElementById('iv-val-total').innerText = Math.round(somaIvs);
-    document.getElementById('iv-val-poder').innerText = somaPoder.toLocaleString('pt-BR');
-    document.getElementById('iv-footer-power').innerText = `Poder no jogo: ${somaPoder.toLocaleString('pt-BR')}`;
+    document.getElementById('iv-val-total').value = totalReal;
+    document.getElementById('iv-val-poder').value = poderReal.toLocaleString('pt-BR');
     
     // Update Potential Ring
-    const pctGeral = Math.min(100, Math.max(0, (somaIvs / MAX_IV_TOTAL) * 100));
+    const pctGeral = Math.min(100, Math.max(0, (totalReal / MAX_IV_TOTAL) * 100));
     document.getElementById('iv-ring-txt').innerText = Math.round(pctGeral) + '%';
     
     let ringCor = "#58a6ff";
@@ -413,8 +421,48 @@ function recalcIVs() {
 
 // Ouvintes de evento para inputs
 document.getElementById('iv-inp-nivel').addEventListener('input', recalcIVs);
-document.getElementById('iv-inp-qualidade').addEventListener('input', recalcIVs);
+document.getElementById('iv-inp-qualidade').addEventListener('input', (e) => {
+    if (currentExtractedData) {
+        currentExtractedData.ivTotal = null;
+        currentExtractedData.poder = null;
+    }
+    recalcIVs();
+});
 Object.keys(EXPOENTES).forEach(k => {
-    document.getElementById(`iv-inp-${k}-atual`).addEventListener('input', recalcIVs);
-    document.getElementById(`iv-inp-${k}-base`).addEventListener('input', recalcIVs);
+    document.getElementById(`iv-inp-${k}-atual`).addEventListener('input', (e) => {
+        if (currentExtractedData) {
+            currentExtractedData.ivTotal = null;
+            currentExtractedData.poder = null;
+        }
+        recalcIVs();
+    });
+    document.getElementById(`iv-inp-${k}-base`).addEventListener('input', (e) => {
+        if (currentExtractedData) {
+            currentExtractedData.ivTotal = null;
+            currentExtractedData.poder = null;
+        }
+        recalcIVs();
+    });
+});
+
+// Listener para atualizar anel quando digitar manualmente no IV Total
+document.getElementById('iv-val-total').addEventListener('input', (e) => {
+    let t = Number(e.target.value) || 0;
+    const pctGeral = Math.min(100, Math.max(0, (t / MAX_IV_TOTAL) * 100));
+    document.getElementById('iv-ring-txt').innerText = Math.round(pctGeral) + '%';
+    
+    let ringCor = "#58a6ff";
+    let potTitle = "Normal";
+    
+    if (pctGeral >= 90) { ringCor = "#f85149"; potTitle = "Mítico"; }
+    else if (pctGeral >= 80) { ringCor = "#f2c665"; potTitle = "Épico"; }
+    else if (pctGeral >= 70) { ringCor = "#ab7df8"; potTitle = "Raro"; }
+    else if (pctGeral >= 50) { ringCor = "#58a6ff"; potTitle = "Bom"; }
+    
+    document.getElementById('iv-ring').style.background = `conic-gradient(${ringCor} ${pctGeral}%, #0d1117 0)`;
+    document.getElementById('iv-ring-txt').style.color = ringCor;
+    
+    const potEl = document.getElementById('iv-pot-title');
+    potEl.innerText = potTitle;
+    potEl.style.color = ringCor;
 });

@@ -221,6 +221,13 @@ function performMaximizeToggle(id) {
 
         document.querySelectorAll('.panel-wrapper').forEach(p => p.style.opacity = '1');
         currentlyMaximizedId = null;
+        
+        // Retorna o zoom para o tamanho reduzido na grade
+        const wv = document.getElementById('webview-' + id);
+        if (wv) {
+            zoomState[wv.id] = 0.6;
+            try { wv.setZoomFactor(0.6); } catch(e) {}
+        }
     } else {
         // Maximize
         const ph = document.createElement('div');
@@ -231,8 +238,15 @@ function performMaximizeToggle(id) {
         mainGrid.insertBefore(ph, targetPanel);
 
         targetPanel.classList.add('maximized');
-        btn.innerHTML = '<i data-lucide="minimize" width="16" height="16"></i>';
+        btn.innerHTML = '<i data-lucide="minimize-2" width="16" height="16"></i>';
         btn.setAttribute('title', 'Restaurar');
+        
+        // Define o zoom padrão normal para quando maximizado
+        const wv = document.getElementById('webview-' + id);
+        if (wv) {
+            zoomState[wv.id] = 1.0;
+            try { wv.setZoomFactor(1.0); } catch(e) {}
+        }
         
         targetPanel.style.opacity = '1'; // Ensure the target panel is fully visible
 
@@ -341,7 +355,12 @@ lucide.createIcons();
 
 // Handle zoom in/out
 const zoomState = {};
-document.querySelectorAll('webview').forEach(wv => zoomState[wv.id] = 1.0);
+document.querySelectorAll('webview').forEach(wv => {
+    zoomState[wv.id] = 0.6; // Padrão para minijanelas
+    wv.addEventListener('dom-ready', () => {
+        wv.setZoomFactor(zoomState[wv.id]);
+    });
+});
 
 document.querySelectorAll('.zoom-btn').forEach(btn => {
     btn.addEventListener('click', () => {
