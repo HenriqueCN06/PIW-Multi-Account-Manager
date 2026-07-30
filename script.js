@@ -376,3 +376,12 @@ document.querySelectorAll('.zoom-btn').forEach(btn => {
         webview.setZoomFactor(zoomState[targetId]);
     });
 });
+
+// Tools Menu Logic
+const toolsMenuBtn = document.getElementById('tools-menu-btn');
+const toolsMenuContainer = document.getElementById('tools-menu-container');
+
+toolsMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toolsMenuContainer.classList.toggle('open');
+});

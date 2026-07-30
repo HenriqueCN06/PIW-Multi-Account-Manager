@@ -249,54 +249,117 @@ webview {
 
 #max-nav-left {
     left: 20px;
+    view-transition-name: nav-left;
 }
 
 #max-nav-right {
     right: 20px;
+    view-transition-name: nav-right;
 }
 
-/* IV Toggle Button */
-#iv-toggle-btn {
+/* Tools Menu */
+#tools-menu-container {
     view-transition-name: iv-btn;
     position: fixed;
     left: 20px;
     top: 20px;
+    z-index: 2000;
+    transition: top 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+body:has(.restore-btn.corner-1) #tools-menu-container {
+    top: 80px;
+}
+
+#tools-menu-btn {
     width: 48px;
     height: 48px;
+    border-radius: 50%;
+    background-color: #1f6feb; 
+    color: white;
+    border: 1px solid #388bfd;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(31, 111, 235, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+#tools-menu-btn:hover {
+    background-color: #388bfd;
+    transform: scale(1.1);
+}
+
+#tools-menu-btn svg {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#tools-menu-container.open #tools-menu-btn svg {
+    transform: rotate(180deg);
+}
+
+#tools-dropdown {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.95);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top center;
+}
+
+#tools-menu-container.open #tools-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.tool-btn {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     background-color: #f85149;
     color: white;
     border: 2px solid #ff7b72;
     cursor: pointer;
-    z-index: 2000;
-    box-shadow: 0 4px 15px rgba(248, 81, 73, 0.4);
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: top 0.3s ease, transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 10px rgba(248, 81, 73, 0.3);
+    transition: transform 0.2s, background-color 0.2s;
 }
 
-body:has(.restore-btn.corner-1) #iv-toggle-btn {
-    top: 80px;
+.tool-btn:hover {
+    background-color: #ff7b72;
+    transform: scale(1.1);
 }
 
-::view-transition-group(iv-btn) {
+::view-transition-group(iv-btn),
+::view-transition-group(nav-left),
+::view-transition-group(nav-right) {
     animation: none !important;
     z-index: 9999;
 }
-::view-transition-image-pair(iv-btn) {
+::view-transition-image-pair(iv-btn),
+::view-transition-image-pair(nav-left),
+::view-transition-image-pair(nav-right) {
     animation: none !important;
 }
-::view-transition-old(iv-btn) {
+::view-transition-old(iv-btn),
+::view-transition-old(nav-left),
+::view-transition-old(nav-right) {
     display: none !important;
 }
-::view-transition-new(iv-btn) {
+::view-transition-new(iv-btn),
+::view-transition-new(nav-left),
+::view-transition-new(nav-right) {
     animation: none !important;
-}
-
-#iv-toggle-btn:hover {
-    background-color: #ff7b72;
-    transform: scale(1.1);
 }
 
 /* IV Calculator Panel */
