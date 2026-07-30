@@ -112,7 +112,11 @@ const injectMapEnhancer = `
 setInterval(() => {
     document.querySelectorAll('webview').forEach(wv => {
         if (!wv.isLoading()) {
-            wv.executeJavaScript(injectMapEnhancer).catch(() => {});
+            wv.executeJavaScript('!!window.__mapEnhancerInjected').then(injected => {
+                if (!injected) {
+                    wv.executeJavaScript(injectMapEnhancer).catch(() => {});
+                }
+            }).catch(() => {});
         }
     });
 }, 2000);

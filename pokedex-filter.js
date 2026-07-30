@@ -65,7 +65,11 @@ const injectPokedexFilter = `
 setInterval(() => {
     document.querySelectorAll('webview').forEach(wv => {
         if (!wv.isLoading()) {
-            wv.executeJavaScript(injectPokedexFilter).catch(() => {});
+            wv.executeJavaScript('!!window.__pokedexFilterInjected').then(injected => {
+                if (!injected) {
+                    wv.executeJavaScript(injectPokedexFilter).catch(() => {});
+                }
+            }).catch(() => {});
         }
     });
 }, 2000);

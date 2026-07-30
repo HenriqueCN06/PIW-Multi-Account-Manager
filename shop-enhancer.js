@@ -246,8 +246,14 @@ setInterval(() => {
         }
 
         if (!wv.isLoading()) {
-            wv.executeJavaScript(`window.__piw_host_locks = ${currentLocks};`).catch(() => {});
-            wv.executeJavaScript(injectShopEnhancer).catch(() => {});
+            wv.executeJavaScript(`
+                window.__piw_host_locks = ${currentLocks};
+                !!window.__shopEnhancerInjected;
+            `).then(injected => {
+                if (!injected) {
+                    wv.executeJavaScript(injectShopEnhancer).catch(() => {});
+                }
+            }).catch(() => {});
         }
     });
 }, 2000);

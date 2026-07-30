@@ -171,8 +171,15 @@ const injectScriptCode = `
     setInterval(() => {
         document.querySelectorAll('webview').forEach(wv => {
             if (!wv.isLoading()) {
-                wv.executeJavaScript(injectScriptCode).then(() => {
-                    wv.executeJavaScript(`if(window.toggleIVWatcher) window.toggleIVWatcher(${ivWatcherActive});`);
+                wv.executeJavaScript('!!window.__ivInjected').then(injected => {
+                    if (!injected) {
+                        wv.executeJavaScript(injectScriptCode).then(() => {
+                            wv.executeJavaScript(`if(window.toggleIVWatcher) window.toggleIVWatcher(${ivWatcherActive});`).catch(() => {});
+                        }).catch(() => {});
+                    } else {
+                        // Apenas garante que o status do watcher tá sincronizado
+                        wv.executeJavaScript(`if(window.toggleIVWatcher) window.toggleIVWatcher(${ivWatcherActive});`).catch(() => {});
+                    }
                 }).catch(() => {});
             }
         });
