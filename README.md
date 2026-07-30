@@ -5,7 +5,7 @@ O **PIW Multi Account Manager** (PIWMAC) é um aplicativo desenvolvido para faci
 O objetivo principal deste projeto é oferecer ferramentas e melhorias de qualidade de vida (*Quality of Life*) que otimizem o seu tempo e tragam mais praticidade para o seu dia a dia no jogo. Como o projeto está em constante evolução e sempre recebendo novas adições, nós focamos em manter a essência do jogo enquanto adicionamos recursos práticos através do nosso aplicativo.
 
 ### ✨ Baixou, jogou!
-Um dos maiores diferenciais do PIWMAC é a sua facilidade de uso. Todas as ferramentas e melhorias já vêm 100% embutidas no próprio app de forma nativa. Isso significa que **você não precisa baixar nada além da versão mais atualizada do aplicativo, nem realizar configurações extras.** O aplicativo já vem totalmente pronto para uso: é só baixar, abrir e aproveitar.
+Um dos maiores diferenciais do PIWMAC é a sua facilidade de uso e interface simplificada. Todas as ferramentas e melhorias já vêm 100% embutidas no próprio app de forma nativa. Isso significa que **você não precisa baixar nada além da versão mais atualizada do aplicativo, nem realizar configurações extras.** O aplicativo já vem totalmente pronto para uso: é só baixar, abrir e aproveitar.
 
 ## 📥 Como Baixar
 
