@@ -32,7 +32,7 @@ body, html {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
-.restore-btn.corner-1 { top: 80px; left: 20px; }
+.restore-btn.corner-1 { top: 20px; left: 20px; }
 .restore-btn.corner-2 { top: 20px; right: 20px; }
 .restore-btn.corner-3 { bottom: 20px; left: 20px; }
 .restore-btn.corner-4 { bottom: 20px; right: 20px; }
@@ -273,7 +273,11 @@ webview {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: transform 0.2s, background-color 0.2s;
+    transition: top 0.3s ease, transform 0.2s, background-color 0.2s;
+}
+
+body:has(.restore-btn.corner-1) #iv-toggle-btn {
+    top: 80px;
 }
 
 ::view-transition-group(iv-btn) {
@@ -283,10 +287,11 @@ webview {
 ::view-transition-image-pair(iv-btn) {
     animation: none !important;
 }
-::view-transition-old(iv-btn),
+::view-transition-old(iv-btn) {
+    display: none !important;
+}
 ::view-transition-new(iv-btn) {
     animation: none !important;
-    mix-blend-mode: normal;
 }
 
 #iv-toggle-btn:hover {
