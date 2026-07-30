@@ -9,7 +9,7 @@ const injectPokedexFilter = `
     document.head.appendChild(style);
 
     function checkPokedex() {
-        const dexHead = document.querySelector('.dex-head');
+        const dexHead = document.querySelector('.dex-head, .ds-head');
         if (dexHead) {
             const dexWindow = dexHead.parentElement;
             
