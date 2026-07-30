@@ -73,8 +73,6 @@ const injectScriptCode = `
     if (window.__ivInjected) return;
     window.__ivInjected = true;
     
-    console.log("__PGIV__" + JSON.stringify({ type: "debug_inj" }));
-
     let lastText = "";
     function extractSprite(tooltip) {
         if (!tooltip) return null;
@@ -145,12 +143,6 @@ const injectScriptCode = `
                 }
                 
                 const normName = foundCreature ? normalizeName(foundCreature.name) : "nao_achou";
-                console.log("__PGIV__" + JSON.stringify({ 
-                    type: "debug_info", 
-                    normName: normName,
-                    listSize: list.length, 
-                    found: !!foundCreature 
-                }));
 
                 console.log("__PGIV__" + JSON.stringify({ type: "hover", text: text, htmlName: null, sprite: sprite, creature: foundCreature || null }));
             }
@@ -192,17 +184,6 @@ document.querySelectorAll('webview').forEach((wv, index) => {
         if (e.message && e.message.startsWith('__PGIV__')) {
             try {
                 const data = JSON.parse(e.message.replace('__PGIV__', ''));
-                if (data.type === 'debug_inj') {
-                    return;
-                }
-                if (data.type === 'debug_map_full') {
-                    window.api.log("MAP FULL DUMP:");
-                    window.api.log(data.html);
-                    return;
-                }
-                if (data.type === 'debug_info') {
-                    return;
-                }
                 if (data.type === 'hover') {
                     const accName = document.querySelector(`#panel-${index + 1} .panel-header span`).innerText;
                     processHover(data.text, data.htmlName, data.sprite, accName, data.creature);
@@ -317,12 +298,18 @@ function processHover(text, htmlName, sprite, accName, creature) {
         const movesList = document.getElementById('iv-moves-list');
         movesList.innerHTML = '';
         let moves = creature.moves || creature.attacks || creature.skills || [];
+        
         moves.forEach(m => {
             const mName = m.name || m.moveName || m.move || m;
             const mPower = m.power || m.basePower || m.damage || m.dmg || '-';
             const mType = m.type || m.element || 'normal';
             const mCategory = m.category || '-';
-            const mLevel = m.learnLevel !== undefined ? m.learnLevel : '-';
+            
+            let levelHtml = `Lv ${m.learnLevel !== undefined ? m.learnLevel : '-'}`;
+            if (m.tm) {
+                // Se for TM, usa um estilo dourado chamativo
+                levelHtml = `<span style="color: #ffd700; text-shadow: 0 0 4px #ff8c00; font-weight: 900; letter-spacing: 1px;">TM</span>`;
+            }
             
             const typeColors = {
                 grass: '#78c850', fire: '#f08030', water: '#6890f0', bug: '#a8b820',
@@ -344,7 +331,7 @@ function processHover(text, htmlName, sprite, accName, creature) {
 
             movesList.innerHTML += `
                 <div class="iv-move-row">
-                    <span class="iv-move-level">Lv ${mLevel}</span>
+                    <span class="iv-move-level">${levelHtml}</span>
                     <span class="iv-type-badge" style="background-color: ${c}">${mType}</span>
                     <span class="iv-move-name">${mName}${catTag}</span>
                     <span class="iv-move-power" style="${powerColor}">${mPower}</span>
