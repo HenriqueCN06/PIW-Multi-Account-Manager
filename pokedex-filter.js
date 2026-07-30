@@ -2,6 +2,7 @@ const injectPokedexFilter = `
 (() => {
     if (window.__pokedexFilterInjected) return;
     window.__pokedexFilterInjected = true;
+    window.__currentDexFilter = 'all';
 
     // Adiciona bloco de CSS estático no head para filtrar a grid
     const style = document.createElement('style');
@@ -35,9 +36,11 @@ const injectPokedexFilter = `
                         <option value="unlocked">Desbloqueados</option>
                         <option value="locked">Bloqueados</option>
                     \`;
+                    sel.value = window.__currentDexFilter;
                     
                     sel.addEventListener('change', (e) => {
                         const val = e.target.value;
+                        window.__currentDexFilter = val;
                         let css = '';
                         if (val === 'caught') css = '.dex-cell:not(.caught) { display: none !important; }';
                         else if (val === 'uncaught') css = '.dex-cell.caught { display: none !important; }';

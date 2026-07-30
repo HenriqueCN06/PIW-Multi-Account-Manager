@@ -60,6 +60,47 @@ const injectMapEnhancer = `
                 marker.classList.remove('caught-marker');
             }
         });
+
+        // Configuração do Filtro
+        const filters = mapWindow.parentElement.querySelector('.map-filters');
+        if (filters && !filters.querySelector('.custom-map-filter')) {
+            const sel = document.createElement('select');
+            sel.className = 'custom-map-filter'; 
+            // Usa o mesmo estilo visual de outros inputs
+            sel.style.marginLeft = '10px';
+            sel.style.padding = '2px 5px';
+            sel.style.background = 'rgba(0,0,0,0.5)';
+            sel.style.color = '#fff';
+            sel.style.border = '1px solid #333';
+            sel.style.borderRadius = '3px';
+
+            sel.innerHTML = \`
+                <option value="all">Status: Todos</option>
+                <option value="caught">Capturados</option>
+                <option value="uncaught">Não Capturados</option>
+            \`;
+            sel.value = window.__currentMapFilter || 'all';
+            
+            sel.addEventListener('change', (e) => {
+                window.__currentMapFilter = e.target.value;
+                let css = '';
+                if (window.__currentMapFilter === 'caught') css = '.hunt-marker:not(.caught-marker) { display: none !important; }';
+                else if (window.__currentMapFilter === 'uncaught') css = '.hunt-marker.caught-marker { display: none !important; }';
+                
+                let styleEl = document.getElementById('custom-map-filter-style');
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = 'custom-map-filter-style';
+                    document.head.appendChild(styleEl);
+                }
+                styleEl.innerHTML = css;
+            });
+            
+            filters.appendChild(sel);
+            
+            // Aplica o estado atual imediatamente
+            sel.dispatchEvent(new Event('change'));
+        }
     }
     
     // Checa a cada 500ms
