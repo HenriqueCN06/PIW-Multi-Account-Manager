@@ -120,6 +120,37 @@
             <button id="iv-toggle-btn" class="tool-btn" title="Abrir Calculadora de IV">
                 <i data-lucide="calculator" width="20" height="20"></i>
             </button>
+            <button id="remote-mark-btn" class="tool-btn" title="Abrir Mark Remoto">
+                <i data-lucide="shopping-bag" width="20" height="20"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Remote Mark Panel -->
+    <div id="mark-panel" class="hidden">
+        <div class="mark-header">
+            <div class="mark-title">
+                <i data-lucide="shopping-bag" width="18" height="18"></i>
+                <select id="mark-account-select">
+                    <option value="1">Conta 1</option>
+                    <option value="2">Conta 2</option>
+                    <option value="3">Conta 3</option>
+                    <option value="4">Conta 4</option>
+                </select>
+            </div>
+            <div class="mark-gold">
+                <i data-lucide="circle-dollar-sign" width="16" height="16"></i>
+                <span id="mark-gold-amount">0</span>
+            </div>
+            <button id="mark-close-btn" class="panel-close-btn" title="Fechar">
+                <i data-lucide="x" width="16" height="16"></i>
+            </button>
+        </div>
+        
+        <div id="mark-loading" class="hidden">Carregando catálogo...</div>
+        
+        <div class="mark-body" id="mark-catalog">
+            <!-- Items rendered dynamically here -->
         </div>
     </div>
 
@@ -268,5 +299,5 @@
     <script src="map-enhancer.js"></script>
     <script src="shop-enhancer.js"></script>
     <script src="login-manager.js"></script>
-</body>
+<script src="remote-mark.js"></script></body>
 </html>
