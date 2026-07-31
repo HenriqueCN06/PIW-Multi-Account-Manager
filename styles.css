@@ -340,12 +340,29 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
     transform: scale(1.1);
 }
 
+#iv-toggle-btn {
+    background-color: #ea580c;
+    border-color: #f97316;
+}
+#iv-toggle-btn:hover {
+    background-color: #f97316;
+}
+
+#remote-mark-btn {
+    background-color: #0284c7;
+    border-color: #38bdf8;
+}
+#remote-mark-btn:hover {
+    background-color: #38bdf8;
+}
+
 /* --- Mark Panel Styles (Premium Native UI) --- */
 #mark-panel {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    view-transition-name: mark-panel;
     width: min(700px, 95vw);
     height: 700px;
     max-height: 85vh;
@@ -590,6 +607,7 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
     top: 50%;
     left: 65px;
     transform: translateY(-50%);
+    view-transition-name: iv-panel;
     width: 420px;
     max-height: 90vh;
     background-color: #131518;
@@ -946,4 +964,15 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
 .iv-footer-hint {
     font-size: 10px;
     color: #6e7681;
+}
+
+::view-transition-group(mark-panel), ::view-transition-group(iv-panel) {
+    animation: none !important;
+    z-index: 99999;
+}
+::view-transition-image-pair(mark-panel), ::view-transition-image-pair(iv-panel) {
+    animation: none !important;
+}
+::view-transition-old(mark-panel), ::view-transition-old(iv-panel) {
+    display: none !important;
 }
