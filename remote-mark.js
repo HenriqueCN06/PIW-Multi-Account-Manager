@@ -76,108 +76,8 @@ async function loadMarkData(accountId) {
     markLoading.classList.remove('hidden');
     markGoldAmount.textContent = '...';
     
-    const fetchPayload = `
-    (async () => {
-        try {
-            const tokenData = JSON.parse(sessionStorage.getItem('pokeweb:tokens') || 'null');
-            const accessToken = tokenData ? tokenData.accessToken : null;
-            const headers = accessToken ? { 'Authorization': 'Bearer ' + accessToken } : {};
-            
-            // Busca de múltiplas rotas para garantir que funcione de qualquer mapa
-            const [shopRes, ballsRes, charRes] = await Promise.all([
-                fetch('/api/game/shop', { headers }),
-                fetch('/api/game/balls', { headers }),
-                fetch('/api/characters/me', { headers })
-            ]);
-            
-            if (!shopRes.ok && !ballsRes.ok) throw new Error("Não foi possível acessar a loja. A conta está logada?");
-            
-            const shopData = (shopRes.ok ? await shopRes.json() : {});
-            const ballsData = (ballsRes.ok ? await ballsRes.json() : {});
-            const charData = (charRes.ok ? await charRes.json() : {});
-            
-            // Lendo itens (poções) diretamente do DOM do inventário
-            window.markDomInventoryCache = window.markDomInventoryCache || {};
-            const domItemCounts = window.markDomInventoryCache;
-            try {
-                // Seleciona todos os slots de qualquer janela de inventário, ignorando se está visível ou não
-                const getSlots = () => document.querySelectorAll('.inv-window .inv-slot[data-guide^="inv-item-"]');
-                
-                let slots = getSlots();
-                let openedByUs = false;
-                
-                // Se a mochila estiver fechada, clicamos no botão dela
-                if (slots.length === 0) {
-                    const dockBtn = document.querySelector('[data-guide="dock-inventory"]');
-                    if (dockBtn) {
-                        dockBtn.click();
-                        openedByUs = true;
-                        
-                        // Espera a mochila abrir
-                        for(let i=0; i<15; i++) {
-                            await new Promise(r => setTimeout(r, 100));
-                            slots = getSlots();
-                            if(slots.length > 0) break;
-                        }
-                    }
-                }
-                
-                if (slots.length > 0) {
-                    for(let key in domItemCounts) delete domItemCounts[key];
-                    let plusFlags = {};
-                    
-                    for (let slot of slots) {
-                        const itemId = slot.getAttribute('data-guide').replace('inv-item-', '');
-                        const qtyEl = slot.querySelector('.inv-qty');
-                        let visualQty = 1;
-                        let hasPlus = false;
-                        
-                        if (qtyEl) {
-                            const txt = qtyEl.textContent.trim().toLowerCase();
-                            if (txt.includes('+')) hasPlus = true;
-                            
-                            if (txt.includes('k')) visualQty = parseFloat(txt.replace(/,/g, '.')) * 1000;
-                            else visualQty = parseInt(txt.replace(/[^0-9]/g, '')) || 1;
-                        }
-                        
-                        let qty = visualQty;
-                        
-                        if (hasPlus) {
-                            plusFlags[itemId] = true;
-                        }
-                        
-                        domItemCounts[itemId] = (domItemCounts[itemId] || 0) + qty;
-                        if (hasPlus) plusFlags[itemId] = true;
-                    }
-                    
-                    window.__markPlusFlags = Object.assign(window.__markPlusFlags || {}, plusFlags);
-                }
-                
-                if (openedByUs) {
-                    const closeBtn = document.querySelector('.inv-window .cfg-x');
-                    if (closeBtn) closeBtn.click();
-                }
-            } catch (e) {}
-            
-            const shopCatalog = shopData.catalog || shopData;
-            const balls = (shopCatalog.balls?.length > 0) ? shopCatalog.balls : (ballsData.catalog || []);
-            const items = shopCatalog.items || [];
-            
-            return {
-                success: true,
-                catalog: { balls, items },
-                gold: charData.character?.gold || charData.gold || shopData.gold || ballsData.gold || 0,
-                counts: Object.assign({}, domItemCounts, shopData.counts, ballsData.counts, charData.counts),
-                plusFlags: window.__markPlusFlags || {}
-            };
-        } catch(err) {
-            return { success: false, error: err.message };
-        }
-    })();
-    `;
-
     try {
-        const result = await wv.executeJavaScript(fetchPayload);
+        const result = await wv.executeJavaScript('window.markApi.fetchMarkData()');
         markLoading.classList.add('hidden');
         
         if (result.success) {
@@ -210,13 +110,7 @@ function renderMarkCatalog(data, accountId) {
     
     markCatalog.innerHTML = allProducts.map(product => {
         let stock = data.counts[product.id] || 0;
-        const hasPlus = data.plusFlags && data.plusFlags[product.id];
-        
-        let stockStr = Number(stock).toLocaleString('pt-BR') + (hasPlus ? '+' : '');
-        
-        if (!product.isBall && stock >= 9999) {
-            stockStr = '9999+';
-        }
+        let stockStr = Number(stock).toLocaleString('pt-BR');
         
         const price = Number(product.priceGold || 0);
         
@@ -278,42 +172,8 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
     allBtns.forEach(btn => btn.style.opacity = '0.5');
     allBtns.forEach(btn => btn.style.pointerEvents = 'none');
     
-    const endpoint = isBall ? '/api/game/balls/buy' : '/api/game/shop/buy';
-    const payloadKey = isBall ? 'ballId' : 'itemId';
-    
-    const buyPayload = `
-    (async () => {
-        try {
-            const tokenData = JSON.parse(sessionStorage.getItem('pokeweb:tokens') || 'null');
-            const accessToken = tokenData ? tokenData.accessToken : null;
-            
-            let res = await fetch('${endpoint}', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    ...(accessToken ? { 'Authorization': 'Bearer ' + accessToken } : {})
-                },
-                body: JSON.stringify({ ${payloadKey}: ${productId}, qty: ${qty} })
-            });
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || "Erro na compra");
-            }
-            const data = await res.json();
-            return {
-                success: true,
-                gold: data.gold,
-                counts: data.counts || {}
-            };
-        } catch (err) {
-            return { success: false, error: err.message };
-        }
-    })();
-    `;
-    
     try {
-        const result = await wv.executeJavaScript(buyPayload);
+        const result = await wv.executeJavaScript(`window.markApi.buyItem('${productId}', ${qty}, ${isBall})`);
         if (result.success) {
             if (result.gold !== undefined) {
                 markGoldAmount.textContent = Number(result.gold).toLocaleString('pt-BR');
@@ -332,22 +192,10 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
                     const currentStock = parseInt(currentText.replace(/[^0-9]/g, '')) || 0;
                     let newStock = currentStock + qty;
                     let stockStr = newStock.toLocaleString('pt-BR');
-                    
-                    if (!isBall && newStock >= 9999) {
-                        stockStr = '9999+';
-                        newStock = 9999;
-                    } else if (currentText.includes('+')) {
-                        stockStr += '+';
-                    }
-                    
                     stockEl.textContent = stockStr;
                     
                     if (markDataCache && markDataCache.counts) {
                         markDataCache.counts[productId] = newStock;
-                        if (newStock >= 9999) {
-                            if (!markDataCache.plusFlags) markDataCache.plusFlags = {};
-                            markDataCache.plusFlags[productId] = true;
-                        }
                     }
                 }
             }
