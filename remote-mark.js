@@ -123,45 +123,52 @@ async function loadMarkData(accountId) {
                 }
                 
                 if (slots.length > 0) {
-                    // Limpa o cache se o inventário abriu para atualizar tudo
                     for(let key in domItemCounts) delete domItemCounts[key];
+                    let plusFlags = {};
                     
-                    slots.forEach(slot => {
+                    for (let slot of slots) {
                         const itemId = slot.getAttribute('data-guide').replace('inv-item-', '');
                         const qtyEl = slot.querySelector('.inv-qty');
-                        let qty = 1;
+                        let visualQty = 1;
+                        let hasPlus = false;
+                        
                         if (qtyEl) {
                             const txt = qtyEl.textContent.trim().toLowerCase();
-                            if (txt.includes('k')) qty = parseFloat(txt.replace(/,/g, '.')) * 1000;
-                            else qty = parseInt(txt.replace(/[^0-9]/g, '')) || 1;
+                            if (txt.includes('+')) hasPlus = true;
+                            
+                            if (txt.includes('k')) visualQty = parseFloat(txt.replace(/,/g, '.')) * 1000;
+                            else visualQty = parseInt(txt.replace(/[^0-9]/g, '')) || 1;
                         }
-                        domItemCounts[itemId] = qty;
-                    });
+                        
+                        let qty = visualQty;
+                        
+                        if (hasPlus) {
+                            plusFlags[itemId] = true;
+                        }
+                        
+                        domItemCounts[itemId] = (domItemCounts[itemId] || 0) + qty;
+                        if (hasPlus) plusFlags[itemId] = true;
+                    }
+                    
+                    window.__markPlusFlags = Object.assign(window.__markPlusFlags || {}, plusFlags);
                 }
                 
-                // Se fomos nós que abrimos a mochila, fechamos rapidamente
                 if (openedByUs) {
                     const closeBtn = document.querySelector('.inv-window .cfg-x');
                     if (closeBtn) closeBtn.click();
                 }
             } catch (e) {}
             
-            // DEBUG: Removido o envio pro localhost
-            
-            // Se o player estiver no mato, /api/game/shop pode vir vazio. Usamos /api/game/balls como fallback.
             const shopCatalog = shopData.catalog || shopData;
-            
             const balls = (shopCatalog.balls?.length > 0) ? shopCatalog.balls : (ballsData.catalog || []);
             const items = shopCatalog.items || [];
             
             return {
                 success: true,
-                catalog: {
-                    balls: balls,
-                    items: items
-                },
+                catalog: { balls, items },
                 gold: charData.character?.gold || charData.gold || shopData.gold || ballsData.gold || 0,
-                counts: Object.assign({}, domItemCounts, shopData.counts, ballsData.counts, charData.counts)
+                counts: Object.assign({}, domItemCounts, shopData.counts, ballsData.counts, charData.counts),
+                plusFlags: window.__markPlusFlags || {}
             };
         } catch(err) {
             return { success: false, error: err.message };
@@ -174,6 +181,9 @@ async function loadMarkData(accountId) {
         markLoading.classList.add('hidden');
         
         if (result.success) {
+            if (result.debugHtml) {
+                alert("DEBUG SLOT HTML:\n\n" + result.debugHtml);
+            }
             markDataCache = result;
             renderMarkCatalog(result, accountId);
         } else {
@@ -199,7 +209,15 @@ function renderMarkCatalog(data, accountId) {
     }
     
     markCatalog.innerHTML = allProducts.map(product => {
-        const stock = data.counts[product.id] || 0;
+        let stock = data.counts[product.id] || 0;
+        const hasPlus = data.plusFlags && data.plusFlags[product.id];
+        
+        let stockStr = Number(stock).toLocaleString('pt-BR') + (hasPlus ? '+' : '');
+        
+        if (!product.isBall && stock >= 9999) {
+            stockStr = '9999+';
+        }
+        
         const price = Number(product.priceGold || 0);
         
         let imgPath = product.image || product.iconUrl || product.icon || '';
@@ -222,7 +240,7 @@ function renderMarkCatalog(data, accountId) {
                     <img src="${imgUrl}" class="mark-item-img ${product.isBall ? 'mark-img-ball' : ''}" alt="${product.name}" onerror="this.src='https://poke.idleworld.online/images/items/pokeball.png'">
                     <div>
                         <div class="mark-item-name">${product.name}</div>
-                        <div class="mark-item-stock">Possui: <span id="stock-${product.id}">${Number(stock).toLocaleString('pt-BR')}</span></div>
+                        <div class="mark-item-stock">Possui: <span id="stock-${product.id}">${stockStr}</span></div>
                     </div>
                 </div>
                 <div class="mark-item-price">
@@ -310,10 +328,27 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
                 // Se a API não retornou a quantidade oficial (ex: poções), nós simulamos a soma para o usuário não ficar no escuro
                 const stockEl = document.getElementById(`stock-${productId}`);
                 if (stockEl) {
-                    const currentStock = parseInt(stockEl.textContent.replace(/[^0-9]/g, '')) || 0;
-                    const newStock = currentStock + qty;
-                    stockEl.textContent = newStock.toLocaleString('pt-BR');
-                    if (markDataCache && markDataCache.counts) markDataCache.counts[productId] = newStock;
+                    const currentText = stockEl.textContent;
+                    const currentStock = parseInt(currentText.replace(/[^0-9]/g, '')) || 0;
+                    let newStock = currentStock + qty;
+                    let stockStr = newStock.toLocaleString('pt-BR');
+                    
+                    if (!isBall && newStock >= 9999) {
+                        stockStr = '9999+';
+                        newStock = 9999;
+                    } else if (currentText.includes('+')) {
+                        stockStr += '+';
+                    }
+                    
+                    stockEl.textContent = stockStr;
+                    
+                    if (markDataCache && markDataCache.counts) {
+                        markDataCache.counts[productId] = newStock;
+                        if (newStock >= 9999) {
+                            if (!markDataCache.plusFlags) markDataCache.plusFlags = {};
+                            markDataCache.plusFlags[productId] = true;
+                        }
+                    }
                 }
             }
         } else {
