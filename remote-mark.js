@@ -254,6 +254,12 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
         return;
     }
     
+    // Bloqueia a UI para evitar glitches do dropdown fechando durante o update do DOM
+    markAccountSelect.disabled = true;
+    const allBtns = document.querySelectorAll('.mark-buy-btn');
+    allBtns.forEach(btn => btn.style.opacity = '0.5');
+    allBtns.forEach(btn => btn.style.pointerEvents = 'none');
+    
     const endpoint = isBall ? '/api/game/balls/buy' : '/api/game/shop/buy';
     const payloadKey = isBall ? 'ballId' : 'itemId';
     
@@ -316,5 +322,10 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
     } catch (err) {
         console.error(err);
         alert("Erro de comunicação ao comprar.");
+    } finally {
+        // Libera a UI
+        markAccountSelect.disabled = false;
+        allBtns.forEach(btn => btn.style.opacity = '1');
+        allBtns.forEach(btn => btn.style.pointerEvents = '');
     }
 };
