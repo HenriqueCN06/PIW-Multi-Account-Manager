@@ -161,7 +161,7 @@ async function loadMarkData(accountId) {
                     items: items
                 },
                 gold: charData.character?.gold || charData.gold || shopData.gold || ballsData.gold || 0,
-                counts: Object.assign({}, shopData.counts, ballsData.counts, charData.counts, domItemCounts)
+                counts: Object.assign({}, domItemCounts, shopData.counts, ballsData.counts, charData.counts)
             };
         } catch(err) {
             return { success: false, error: err.message };
@@ -263,7 +263,7 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
             const tokenData = JSON.parse(sessionStorage.getItem('pokeweb:tokens') || 'null');
             const accessToken = tokenData ? tokenData.accessToken : null;
             
-            const res = await fetch('${endpoint}', {
+            let res = await fetch('${endpoint}', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -271,6 +271,7 @@ window.buyMarkItem = async function(accountId, productId, qty, unitPrice, isBall
                 },
                 body: JSON.stringify({ ${payloadKey}: ${productId}, qty: ${qty} })
             });
+
             if (!res.ok) {
                 const text = await res.text();
                 throw new Error(text || "Erro na compra");
