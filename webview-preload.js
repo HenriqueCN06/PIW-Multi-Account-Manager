@@ -127,13 +127,9 @@ contextBridge.exposeInMainWorld('markApi', {
 
             // Mapeando a array do inventário (socket) para o formato { "id": qty }
             const wsItemCounts = {};
-            let plusFlags = {};
             if (inventoryArray && inventoryArray.length > 0) {
                 for (let item of inventoryArray) {
-                    const itemId = String(item.itemId);
-                    const qty = Number(item.quantity) || 0;
-                    wsItemCounts[itemId] = qty;
-                    if (qty >= 9999) plusFlags[itemId] = true;
+                    wsItemCounts[String(item.itemId)] = Number(item.quantity) || 0;
                 }
             }
 
@@ -145,8 +141,7 @@ contextBridge.exposeInMainWorld('markApi', {
                 success: true,
                 catalog: { balls, items },
                 gold: charRes.character?.gold || charRes.gold || shopRes.gold || ballsRes.gold || 0,
-                counts: Object.assign({}, wsItemCounts, shopRes.counts, ballsRes.counts, charRes.counts),
-                plusFlags: plusFlags
+                counts: Object.assign({}, wsItemCounts, shopRes.counts, ballsRes.counts, charRes.counts)
             };
         } catch (err) {
             return { success: false, error: err.message };
