@@ -141,6 +141,8 @@ function updateMarkAccountOptions() {
 
 // Busca os dados do catálogo injetando script na webview
 async function loadMarkData(accountId) {
+    if (!accountId) return;
+    
     const wv = document.getElementById(`webview-${accountId}`);
     if (!wv) return;
 
@@ -148,6 +150,8 @@ async function loadMarkData(accountId) {
     markSellList.innerHTML = '';
     const msl = document.getElementById('mark-sell-stones-list');
     if(msl) msl.innerHTML = '';
+    const msp = document.getElementById('mark-sell-pokemons-list');
+    if(msp) msp.innerHTML = '';
     markLoading.classList.remove('hidden');
     markGoldAmount.textContent = '...';
     
@@ -156,16 +160,15 @@ async function loadMarkData(accountId) {
         markLoading.classList.add('hidden');
         
         if (result.success) {
-            if (result.debugHtml) {
-                alert("DEBUG SLOT HTML:\n\n" + result.debugHtml);
-            }
             markDataCache = result;
             renderMarkCatalog(result, accountId);
-            
             
             await fetchItemsDictionary();
             renderSellCatalog(accountId);
             renderSellStonesCatalog(accountId);
+            if (result.pokemons) {
+                renderSellPokemons(result.pokemons, accountId);
+            }
         } else {
             markCatalog.innerHTML = `<div style="grid-column: 1 / -1; color:#ef4444; padding: 60px 20px; text-align: center; font-size: 16px; font-weight: 500;">Erro: ${result.error}</div>`;
         }
@@ -472,13 +475,13 @@ function renderSellCatalog(accountId) {
     selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
     
     newSelectAllBtn.addEventListener('click', () => {
-        const checkboxes = Array.from(document.querySelectorAll('.mark-sell-item-checkbox:not(:disabled)'));
+        const checkboxes = Array.from(document.querySelectorAll('#mark-sell-list .mark-sell-item-checkbox:not(:disabled)'));
         if (checkboxes.length === 0) return;
         
         const allChecked = checkboxes.every(cb => cb.checked);
         const newState = !allChecked;
         
-        document.querySelectorAll('.mark-sell-item:not(.locked)').forEach(row => {
+        document.querySelectorAll('#mark-sell-list .mark-sell-item:not(.locked)').forEach(row => {
             const cb = row.querySelector('.mark-sell-item-checkbox');
             const inp = row.querySelector('.sell-qty-input');
             cb.checked = newState;
@@ -491,7 +494,7 @@ function renderSellCatalog(accountId) {
 
 function updateSelectAllBtnState() {
     const selectAllBtn = document.getElementById('mark-sell-select-all-btn');
-    const checkboxes = Array.from(document.querySelectorAll('.mark-sell-item-checkbox:not(:disabled)'));
+    const checkboxes = Array.from(document.querySelectorAll('#mark-sell-list .mark-sell-item-checkbox:not(:disabled)'));
     if (checkboxes.length === 0) return;
     const allChecked = checkboxes.every(cb => cb.checked);
     if (allChecked) {
@@ -499,12 +502,21 @@ function updateSelectAllBtnState() {
     } else {
         selectAllBtn.textContent = 'Selecionar Tudo';
     }
+    // Debugging logic
+    if (window.__piw_debug_select_all) {
+        console.log('updateSelectAllBtnState:', {
+            totalCheckboxes: checkboxes.length,
+            checkedCheckboxes: checkboxes.filter(c => c.checked).length,
+            allChecked,
+            btnText: selectAllBtn.textContent
+        });
+    }
 }
 
 function updateSellTotal() {
     let total = 0;
     let selectedCount = 0;
-    document.querySelectorAll('.mark-sell-item:not(.locked)').forEach(itemEl => {
+    document.querySelectorAll('#mark-sell-list .mark-sell-item:not(.locked)').forEach(itemEl => {
         const price = parseInt(itemEl.getAttribute('data-price')) || 0;
         const inp = itemEl.querySelector('.sell-qty-input');
         const qty = parseInt(inp.value) || 0;
@@ -821,3 +833,265 @@ markSellStonesBtn.addEventListener('click', async () => {
     }
 });
 
+
+
+// =========================================================
+// POKEMONS SELL LOGIC
+// =========================================================
+
+function getQualityName(q) {
+    if (q >= 4.0) return 'Divina';
+    if (q >= 3.0) return 'Anciã';
+    if (q >= 2.0) return 'Mítica';
+    if (q >= 1.7) return 'Lendária';
+    if (q >= 1.5) return 'Épica';
+    if (q >= 1.3) return 'Rara';
+    if (q >= 1.1) return 'Incomum';
+    if (q >= 1.0) return 'Comum';
+    return 'Fraca';
+}
+
+function getQualityColor(q) {
+    if (q >= 4.0) return '#f8fafc'; // Divina
+    if (q >= 3.0) return '#ca8a04'; // Anciã
+    if (q >= 2.0) return '#a855f7'; // Mítica
+    if (q >= 1.7) return '#fb923c'; // Lendária
+    if (q >= 1.5) return '#facc15'; // Épica
+    if (q >= 1.3) return '#c084fc'; // Rara
+    if (q >= 1.1) return '#38bdf8'; // Incomum
+    if (q >= 1.0) return '#4ade80'; // Comum
+    return '#9ca3af'; // Fraca
+}
+
+function renderSellPokemons(pokemons, accountId) {
+    const listEl = document.getElementById('mark-sell-pokemons-list');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '';
+    
+    const sellable = pokemons.filter(poke => !poke.team && !poke.starter && Number(poke.sellValue) > 0);
+    
+    if (sellable.length === 0) {
+        listEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #a0aec0;">Nenhum Pokémon vendável no inventário.</div>';
+        updateMarkSellPokemonsTotal();
+        return;
+    }
+    
+    sellable.forEach(poke => {
+        const isProtected = Boolean(poke.locked || poke.shiny || poke.market || poke.listed);
+        const pokeId = String(poke.id);
+        const sellValue = Number(poke.sellValue) || 0;
+        const iv = poke.ivTotal ?? '?';
+        const quality = Number.isFinite(Number(poke.quality)) ? Number(poke.quality).toFixed(2) : '?';
+        
+
+
+        const row = document.createElement('div');
+        row.className = 'mark-sell-item' + (isProtected ? ' locked' : '');
+        row.dataset.pokeId = pokeId;
+        
+        // Checkbox
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'mark-sell-item-checkbox mark-sell-pokemon-checkbox';
+        checkbox.dataset.pokeId = pokeId;
+        checkbox.dataset.value = sellValue;
+        checkbox.disabled = isProtected;
+        checkbox.addEventListener('change', (e) => {
+            if (checkbox.checked) row.classList.add('selected');
+            else row.classList.remove('selected');
+            updateMarkSellPokemonsTotal();
+        });
+
+        row.addEventListener('click', (e) => {
+            if (isProtected) return;
+            if (e.target.tagName === 'INPUT' || e.target.closest('i')) return;
+            checkbox.checked = !checkbox.checked;
+            if (checkbox.checked) row.classList.add('selected');
+            else row.classList.remove('selected');
+            updateMarkSellPokemonsTotal();
+        });
+        
+        // Info container
+        const info = document.createElement('div');
+        info.className = 'item-info';
+        
+        // Name and flags
+        const nameRow = document.createElement('div');
+        nameRow.className = 'item-name';
+        
+        const nameText = document.createElement('span');
+        nameText.textContent = poke.name || `Pokémon ${poke.speciesId}`;
+        nameRow.appendChild(nameText);
+        
+        if (poke.shiny) {
+            const shinyIcon = document.createElement('span');
+            shinyIcon.textContent = '✨';
+            shinyIcon.title = 'Shiny';
+            nameRow.appendChild(shinyIcon);
+        }
+        
+        // Details
+        const detailsRow = document.createElement('div');
+        detailsRow.className = 'item-stock';
+        const qNum = Number.isFinite(Number(poke.quality)) ? Number(poke.quality) : 1.0;
+          const qName = getQualityName(qNum);
+          const qColor = getQualityColor(qNum);
+          row.dataset.qname = qName;
+        detailsRow.innerHTML = `IV: ${iv} | Qualidade: <span style="color:${qColor}">${qNum.toFixed(2)} (${qName})</span>`;
+        
+        info.appendChild(nameRow);
+        info.appendChild(detailsRow);
+        
+        // Value
+        const valueBox = document.createElement('div');
+        valueBox.className = 'item-price-box';
+        
+        const valueDiv = document.createElement('div');
+        valueDiv.className = 'item-price';
+        valueDiv.textContent = '$' + sellValue.toLocaleString('pt-BR');
+        
+        valueBox.appendChild(valueDiv);
+        
+        // Lock Icon on the right
+        const lockContainer = document.createElement('div');
+        lockContainer.style.display = 'flex';
+        lockContainer.style.alignItems = 'center';
+        lockContainer.style.justifyContent = 'center';
+        lockContainer.style.paddingLeft = '10px';
+        lockContainer.style.marginLeft = '10px';
+        lockContainer.style.borderLeft = '1px solid #1a2d3a';
+        lockContainer.title = isProtected ? 'Bloqueado (Trava do jogo)' : 'Desbloqueado';
+        
+        const lockIconSVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`;
+        lockContainer.style.color = isProtected ? '#ef4444' : '#475569';
+        lockContainer.innerHTML = lockIconSVG;
+
+        row.appendChild(checkbox);
+        row.appendChild(info);
+        row.appendChild(valueBox);
+        row.appendChild(lockContainer);
+        
+        listEl.appendChild(row);
+    });
+    
+    // Refresh lucide icons for the locks
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+    applyPokemonFilters();
+}
+
+function updateMarkSellPokemonsTotal() {
+    const checkboxes = document.querySelectorAll('.mark-sell-pokemon-checkbox:checked');
+    const sellBtn = document.getElementById('mark-sell-pokemons-btn');
+    const selectAllBtn = document.getElementById('mark-sell-pokemons-select-all-btn');
+    
+    let totalItems = checkboxes.length;
+    
+    if (sellBtn) {
+        sellBtn.disabled = totalItems === 0;
+    }
+    
+    document.getElementById('mark-sell-pokemons-total').textContent = totalItems.toLocaleString('pt-BR');
+    
+    if (selectAllBtn) {
+        const visibleRows = Array.from(document.querySelectorAll('#mark-sell-pokemons-list .mark-sell-item')).filter(r => r.style.display !== 'none');
+        const visibleCheckboxes = visibleRows.map(r => r.querySelector('.mark-sell-pokemon-checkbox:not(:disabled)')).filter(Boolean);
+        if (visibleCheckboxes.length > 0) {
+            const allChecked = visibleCheckboxes.every(cb => cb.checked);
+            selectAllBtn.textContent = allChecked ? 'Desmarcar Tudo' : 'Selecionar Tudo';
+        } else {
+            selectAllBtn.textContent = 'Selecionar Tudo';
+        }
+    }
+}
+
+// Select All Botão
+const sellPokemonsSelectAllBtn = document.getElementById('mark-sell-pokemons-select-all-btn');
+if (sellPokemonsSelectAllBtn) {
+    sellPokemonsSelectAllBtn.addEventListener('click', () => {
+        const visibleRows = Array.from(document.querySelectorAll('#mark-sell-pokemons-list .mark-sell-item')).filter(r => r.style.display !== 'none');
+        const checkboxes = visibleRows.map(r => r.querySelector('.mark-sell-pokemon-checkbox:not(:disabled)')).filter(Boolean);
+        if (checkboxes.length === 0) return;
+        const allChecked = checkboxes.every(cb => cb.checked);
+        
+        checkboxes.forEach(cb => {
+            cb.checked = !allChecked;
+            const row = cb.closest('.mark-sell-item');
+            if (cb.checked) row.classList.add('selected');
+            else row.classList.remove('selected');
+        });
+        
+        updateMarkSellPokemonsTotal();
+    });
+}
+
+// Vender Botão
+const sellPokemonsBtn = document.getElementById('mark-sell-pokemons-btn');
+if (sellPokemonsBtn) {
+    sellPokemonsBtn.addEventListener('click', async () => {
+        const checkboxes = document.querySelectorAll('.mark-sell-pokemon-checkbox:checked');
+        const pokeIds = Array.from(checkboxes).map(cb => String(cb.dataset.pokeId));
+        
+        if (pokeIds.length === 0) return;
+        
+        const accountId = markAccountSelect.value;
+        const wv = document.getElementById(`webview-${accountId}`);
+        if (!wv) return;
+        
+        sellPokemonsBtn.disabled = true;
+        const originalText = sellPokemonsBtn.textContent;
+        sellPokemonsBtn.textContent = 'Vendendo...';
+        
+        try {
+            const payloadStr = JSON.stringify(pokeIds);
+            const script = `window.markApi.sellPokemons(${payloadStr})`;
+            const result = await wv.executeJavaScript(script);
+            
+            if (result && result.success) {
+                // Sucesso
+            } else {
+                console.error("Falha ao vender pokemons", result);
+                alert("Erro ao vender: " + (result?.error || "Desconhecido"));
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        
+        // Recarregar os dados do Mark independente do resultado
+        await loadMarkData(accountId);
+        
+        sellPokemonsBtn.textContent = originalText;
+    });
+}
+
+function applyPokemonFilters() {
+    const listEl = document.getElementById('mark-sell-pokemons-list');
+    if (!listEl) return;
+    
+    const activeQualities = Array.from(document.querySelectorAll('.mark-q-filter.active')).map(btn => btn.dataset.quality);
+    
+    listEl.querySelectorAll('.mark-sell-item').forEach(row => {
+        const qname = row.dataset.qname;
+        if (activeQualities.includes(qname)) {
+            row.style.display = 'flex';
+        } else {
+            row.style.display = 'none';
+            const cb = row.querySelector('.mark-sell-item-checkbox');
+            if (cb && cb.checked) {
+                cb.checked = false;
+                row.classList.remove('selected');
+            }
+        }
+    });
+    
+    updateMarkSellPokemonsTotal();
+}
+
+document.querySelectorAll('.mark-q-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        btn.classList.toggle('active');
+        applyPokemonFilters();
+    });
+});

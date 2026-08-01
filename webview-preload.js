@@ -16,6 +16,9 @@ webFrame.executeJavaScript(`
         if (message?.type === 'inventory') {
             window.dispatchEvent(new CustomEvent('poke-inventory-update', { detail: message.items || [] }));
         }
+        if (message?.type === 'pokes') {
+            window.dispatchEvent(new CustomEvent('poke-pokes-update', { detail: message.list || [] }));
+        }
     }
 
     function TrackedWebSocket(url, protocols) {
@@ -40,6 +43,12 @@ webFrame.executeJavaScript(`
     window.addEventListener('request-poke-inventory', () => {
         if (gameSocket && gameSocket.readyState === NativeWebSocket.OPEN) {
             gameSocket.send(JSON.stringify({ type: 'inv-get' }));
+        }
+    });
+
+    window.addEventListener('request-poke-pokes', () => {
+        if (gameSocket && gameSocket.readyState === NativeWebSocket.OPEN) {
+            gameSocket.send(JSON.stringify({ type: 'pokes-get' }));
         }
     });
 `);
@@ -111,14 +120,33 @@ async function getInventorySilently() {
     });
 }
 
+async function getPokesSilently() {
+    return new Promise(resolve => {
+        const timeout = setTimeout(() => {
+            window.removeEventListener('poke-pokes-update', listener);
+            resolve([]); 
+        }, 3000);
+
+        const listener = (e) => {
+            clearTimeout(timeout);
+            window.removeEventListener('poke-pokes-update', listener);
+            resolve(e.detail);
+        };
+
+        window.addEventListener('poke-pokes-update', listener);
+        window.dispatchEvent(new CustomEvent('request-poke-pokes'));
+    });
+}
+
 contextBridge.exposeInMainWorld('markApi', {
     fetchMarkData: async () => {
         try {
-            const [shopRes, ballsRes, charRes, inventoryArray] = await Promise.all([
+            const [shopRes, ballsRes, charRes, inventoryArray, pokesArray] = await Promise.all([
                 gameApiRequest('/api/game/shop').catch(() => ({})),
                 gameApiRequest('/api/game/balls').catch(() => ({})),
                 gameApiRequest('/api/characters/me').catch(() => ({})),
-                getInventorySilently() // <--- Obtém do WebSocket!
+                getInventorySilently(), // <--- Obtém do WebSocket!
+                getPokesSilently()      // <--- Obtém do WebSocket!
             ]);
 
             if (!shopRes.catalog && !ballsRes.catalog && !shopRes.items && !ballsRes.balls) {
@@ -142,7 +170,8 @@ contextBridge.exposeInMainWorld('markApi', {
                 catalog: { balls, items },
                 gold: charRes.character?.gold || charRes.gold || shopRes.gold || ballsRes.gold || 0,
                 itemCounts: Object.assign({}, charRes.counts, shopRes.counts, wsItemCounts),
-                ballCounts: ballsRes.counts || {}
+                ballCounts: ballsRes.counts || {},
+                pokemons: pokesArray || []
             };
         } catch (err) {
             return { success: false, error: err.message };
@@ -205,6 +234,22 @@ contextBridge.exposeInMainWorld('markApi', {
                 success: true,
                 gold: lastGold,
                 counts: finalCounts
+            };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+    
+    sellPokemons: async (pokeIds) => {
+        try {
+            const data = await gameApiRequest('/api/game/pokemon/sell', {
+                method: 'POST',
+                body: JSON.stringify({ pokeIds: pokeIds })
+            });
+
+            return {
+                success: true,
+                gold: data.gold
             };
         } catch (err) {
             return { success: false, error: err.message };

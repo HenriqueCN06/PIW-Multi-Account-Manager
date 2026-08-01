@@ -151,6 +151,7 @@
             <button class="mark-tab active" data-target="mark-catalog">Comprar</button>
             <button class="mark-tab" data-target="mark-sell">Vender Itens</button>
             <button class="mark-tab" data-target="mark-sell-stones">Vender Stones</button>
+            <button class="mark-tab" data-target="mark-sell-pokemons">Vender Pokémons</button>
         </div>
         
         <div id="mark-loading" class="hidden">Carregando catálogo...</div>
@@ -186,6 +187,32 @@
                     <span id="mark-sell-stones-total">0</span>
                 </div>
                 <button id="mark-sell-stones-btn" class="mark-footer-btn" disabled>Vender Selecionados</button>
+            </div>
+        </div>
+
+        <div class="mark-body hidden" id="mark-sell-pokemons">
+            <div id="mark-sell-pokemons-filters" class="mark-quality-filters">
+                <button class="mark-q-filter active" data-quality="Fraca" style="--q-color: #9ca3af;">Fraca</button>
+                <button class="mark-q-filter active" data-quality="Comum" style="--q-color: #4ade80;">Comum</button>
+                <button class="mark-q-filter active" data-quality="Incomum" style="--q-color: #38bdf8;">Incomum</button>
+                <button class="mark-q-filter active" data-quality="Rara" style="--q-color: #c084fc;">Rara</button>
+                <button class="mark-q-filter active" data-quality="Épica" style="--q-color: #facc15;">Épica</button>
+                <button class="mark-q-filter active" data-quality="Lendária" style="--q-color: #fb923c;">Lendária</button>
+                <button class="mark-q-filter active" data-quality="Mítica" style="--q-color: #a855f7;">Mítica</button>
+                <button class="mark-q-filter active" data-quality="Anciã" style="--q-color: #ca8a04;">Anciã</button>
+                <button class="mark-q-filter active" data-quality="Divina" style="--q-color: #f8fafc;">Divina</button>
+            </div>
+            <div id="mark-sell-pokemons-list">
+                <!-- Sell pokemons rendered dynamically here -->
+            </div>
+            <div class="mark-sell-footer">
+                <button id="mark-sell-pokemons-select-all-btn" class="mark-footer-btn">Selecionar Tudo</button>
+                <div class="mark-sell-summary">
+                    <span>Total:</span>
+                    <i data-lucide="circle-dollar-sign" width="14" height="14"></i>
+                    <span id="mark-sell-pokemons-total">0</span>
+                </div>
+                <button id="mark-sell-pokemons-btn" class="mark-footer-btn" disabled>Vender Selecionados</button>
             </div>
         </div>
     </div>
