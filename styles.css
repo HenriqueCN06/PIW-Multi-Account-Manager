@@ -976,3 +976,177 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
 ::view-transition-old(mark-panel), ::view-transition-old(iv-panel) {
     display: none !important;
 }
+/* Mark Remote Sell Tab Styles */
+.mark-tabs-container {
+    display: flex;
+    background: transparent;
+    border-bottom: 1px solid #30363d;
+    padding: 0 10px;
+}
+.mark-tab {
+    background: transparent;
+    color: #a0aec0;
+    border: none;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+.mark-tab:hover {
+    color: #e2e8f0;
+}
+.mark-tab.active {
+    color: #63b3ed;
+    border-bottom: 2px solid #63b3ed;
+}
+
+#mark-sell {
+    display: flex;
+    flex-direction: column;
+}
+#mark-sell-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.mark-sell-item {
+    display: flex;
+    align-items: center;
+    background: #14222d;
+    border: 1px solid #1a2d3a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+.mark-sell-item.selected {
+    border-color: #48bb78;
+    background: rgba(72, 187, 120, 0.1);
+}
+.mark-sell-item:hover:not(.locked) {
+    background: #1a2d3a;
+}
+.mark-sell-item.locked {
+    opacity: 0.5;
+    background: rgba(0,0,0,0.2);
+}
+.mark-sell-item .item-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+.mark-sell-item .item-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.mark-sell-item .item-name {
+    font-size: 13px;
+    color: #e2e8f0;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.mark-sell-item .item-stock {
+    font-size: 11px;
+    color: #a0aec0;
+}
+.mark-sell-item .item-price-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+.mark-sell-item .item-price {
+    font-size: 12px;
+    color: #48bb78;
+    font-weight: bold;
+}
+.mark-sell-item .item-subtotal {
+    font-size: 11px;
+    color: #fbbf24;
+    font-weight: bold;
+}
+.mark-sell-item .item-input {
+    width: 60px;
+    background: #0c161f;
+    border: 1px solid #273f52;
+    color: #e2e8f0;
+    border-radius: 4px;
+    padding: 4px 6px;
+    text-align: center;
+    font-family: inherit;
+    font-size: 12px;
+}
+.mark-sell-item .item-input:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.mark-sell-footer {
+    background: transparent;
+    border-top: 1px solid #30363d;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.mark-sell-summary {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #fbbf24;
+    font-weight: bold;
+    font-size: 14px;
+}
+.mark-footer-btn {
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex: 1;
+    max-width: 170px;
+}
+#mark-sell-btn {
+    background: #48bb78;
+    color: white;
+}
+#mark-sell-btn:hover:not(:disabled) {
+    background: #38a169;
+}
+#mark-sell-btn:disabled {
+    background: #273f52;
+    color: #a0aec0;
+    cursor: not-allowed;
+}
+#mark-sell-select-all-btn {
+    background: #273f52;
+    color: #e2e8f0;
+}
+#mark-sell-select-all-btn:hover {
+    background: #3a546b;
+}
+.mark-sell-item-checkbox {
+    margin-right: 6px;
+    cursor: pointer;
+}
+.mark-sell-select-all {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #a0aec0;
+    font-size: 13px;
+    cursor: pointer;
+}
+.mark-sell-select-all input {
+    cursor: pointer;
+}

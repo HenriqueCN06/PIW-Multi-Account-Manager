@@ -141,7 +141,8 @@ contextBridge.exposeInMainWorld('markApi', {
                 success: true,
                 catalog: { balls, items },
                 gold: charRes.character?.gold || charRes.gold || shopRes.gold || ballsRes.gold || 0,
-                counts: Object.assign({}, wsItemCounts, shopRes.counts, ballsRes.counts, charRes.counts)
+                itemCounts: Object.assign({}, charRes.counts, shopRes.counts, wsItemCounts),
+                ballCounts: ballsRes.counts || {}
             };
         } catch (err) {
             return { success: false, error: err.message };
@@ -156,6 +157,23 @@ contextBridge.exposeInMainWorld('markApi', {
             const data = await gameApiRequest(endpoint, {
                 method: 'POST',
                 body: JSON.stringify({ [payloadKey]: productId, qty: qty })
+            });
+
+            return {
+                success: true,
+                gold: data.gold,
+                counts: data.counts || {}
+            };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+    
+    sellItems: async (itemsToSell) => {
+        try {
+            const data = await gameApiRequest('/api/game/shop/sell', {
+                method: 'POST',
+                body: JSON.stringify({ items: itemsToSell })
             });
 
             return {
