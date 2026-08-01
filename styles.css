@@ -1014,6 +1014,16 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
     flex-direction: column;
     gap: 6px;
 }
+#mark-sell-list::-webkit-scrollbar {
+    width: 6px;
+}
+#mark-sell-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+#mark-sell-list::-webkit-scrollbar-thumb {
+    background-color: #30363d;
+    border-radius: 4px;
+}
 .mark-sell-item {
     display: flex;
     align-items: center;
