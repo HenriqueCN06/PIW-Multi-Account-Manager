@@ -1167,9 +1167,10 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-    padding: 10px;
-    background: #0d1620;
-    border-bottom: 1px solid #1a2d3a;
+    padding: 0 0 16px 0;
+    margin-bottom: 0;
+    background: transparent;
+    border-bottom: 1px solid #30363d;
     justify-content: center;
 }
 .mark-q-filter {
