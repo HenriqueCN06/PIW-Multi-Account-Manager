@@ -343,6 +343,7 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
 #iv-toggle-btn {
     background-color: #ea580c;
     border-color: #f97316;
+    box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
 }
 #iv-toggle-btn:hover {
     background-color: #f97316;
@@ -351,6 +352,7 @@ body:has(.restore-btn.corner-1) #tools-menu-container {
 #remote-mark-btn {
     background-color: #0284c7;
     border-color: #38bdf8;
+    box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
 }
 #remote-mark-btn:hover {
     background-color: #38bdf8;
