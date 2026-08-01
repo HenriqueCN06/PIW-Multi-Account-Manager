@@ -184,5 +184,30 @@ contextBridge.exposeInMainWorld('markApi', {
         } catch (err) {
             return { success: false, error: err.message };
         }
+    },
+    
+    sellStones: async (itemsToSell) => {
+        try {
+            let lastGold = null;
+            let finalCounts = {};
+            
+            // A API do Flint não aceita array, precisa ser um item por vez
+            for (const item of itemsToSell) {
+                const data = await gameApiRequest('/api/game/flint/sell', {
+                    method: 'POST',
+                    body: JSON.stringify({ itemId: item.itemId, qty: item.qty })
+                });
+                if (data.gold !== undefined) lastGold = data.gold;
+                if (data.counts) finalCounts = { ...finalCounts, ...data.counts };
+            }
+
+            return {
+                success: true,
+                gold: lastGold,
+                counts: finalCounts
+            };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
     }
 });

@@ -30,8 +30,7 @@ markTabs.forEach(tab => {
         markTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
         const targetId = tab.getAttribute('data-target');
-        document.getElementById('mark-catalog').classList.add('hidden');
-        document.getElementById('mark-sell').classList.add('hidden');
+        document.querySelectorAll('.mark-body').forEach(b => b.classList.add('hidden'));
         document.getElementById(targetId).classList.remove('hidden');
     });
 });
@@ -147,6 +146,8 @@ async function loadMarkData(accountId) {
 
     markCatalog.innerHTML = '';
     markSellList.innerHTML = '';
+    const msl = document.getElementById('mark-sell-stones-list');
+    if(msl) msl.innerHTML = '';
     markLoading.classList.remove('hidden');
     markGoldAmount.textContent = '...';
     
@@ -161,8 +162,10 @@ async function loadMarkData(accountId) {
             markDataCache = result;
             renderMarkCatalog(result, accountId);
             
+            
             await fetchItemsDictionary();
             renderSellCatalog(accountId);
+            renderSellStonesCatalog(accountId);
         } else {
             markCatalog.innerHTML = `<div style="grid-column: 1 / -1; color:#ef4444; padding: 60px 20px; text-align: center; font-size: 16px; font-weight: 500;">Erro: ${result.error}</div>`;
         }
@@ -547,6 +550,274 @@ markSellBtn.addEventListener('click', async () => {
         alert("Erro de comunicação ao vender.");
     } finally {
         markSellBtn.textContent = 'Vender Selecionados';
+    }
+});
+
+
+
+const markSellStonesList = document.getElementById('mark-sell-stones-list');
+const markSellStonesTotal = document.getElementById('mark-sell-stones-total');
+const markSellStonesBtn = document.getElementById('mark-sell-stones-btn');
+
+function renderSellStonesCatalog(accountId) {
+    if (!itemsDictionary || !markDataCache) return;
+    
+    let lockedItems = [];
+    try {
+        const lockStr = window.__piw_locks_cache && window.__piw_locks_cache[`webview-${accountId}`];
+        if (lockStr) lockedItems = JSON.parse(lockStr);
+    } catch(e) {}
+
+    const sellableStones = [];
+    for (const [itemId, qty] of Object.entries(markDataCache.itemCounts || {})) {
+        if (qty <= 0) continue;
+        const dictItem = itemsDictionary.get(String(itemId));
+        if (!dictItem) continue;
+        
+        const category = String(dictItem.category || '').toLowerCase();
+        const itemNameLower = dictItem.name.toLowerCase();
+        const npcPrice = Number(dictItem.npcPrice) || 0;
+        
+        // Verifica se É stone
+        if (npcPrice > 0 && (category === 'stone' || itemNameLower.includes('stone'))) {
+            const isLocked = lockedItems.includes(dictItem.name);
+            sellableStones.push({
+                itemId,
+                name: dictItem.name,
+                qty: qty,
+                price: npcPrice,
+                isLocked,
+                iconUrl: dictItem.image || dictItem.icon || dictItem.iconUrl || `images/items/${dictItem.name.toLowerCase().replace(/[^a-z0-9]/g, '')}.png`
+            });
+        }
+    }
+    
+    sellableStones.sort((a, b) => b.price - a.price);
+
+    if (sellableStones.length === 0) {
+        markSellStonesList.innerHTML = '<div style="color:#94a3b8; padding:10px;">Nenhuma stone para vender.</div>';
+        markSellStonesTotal.textContent = "0";
+        markSellStonesBtn.disabled = true;
+        return;
+    }
+    
+    markSellStonesList.innerHTML = sellableStones.map(item => {
+        let imgUrl = item.iconUrl.startsWith('http') ? item.iconUrl : `https://poke.idleworld.online/${item.iconUrl.startsWith('/') ? item.iconUrl.slice(1) : item.iconUrl}`;
+        const lockIconSVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`;
+        const lockIcon = `<div class="toggle-lock-btn" data-name="${item.name}" style="cursor:pointer; display:flex; align-items:center; justify-content:center; padding-left:10px; margin-left:10px; border-left:1px solid #1a2d3a; color:${item.isLocked ? '#ef4444' : '#475569'};" title="${item.isLocked ? 'Clique para destravar' : 'Clique para travar'}">${lockIconSVG}</div>`;
+        
+        return `
+        <div class="mark-sell-item ${item.isLocked ? 'locked' : ''}" data-id="${item.itemId}" data-price="${item.price}">
+            <input type="checkbox" class="mark-sell-item-checkbox" ${item.isLocked ? 'disabled title="Bloqueado"' : ''}>
+            <img src="${imgUrl}" class="item-icon" alt="${item.name}" onerror="this.src='https://poke.idleworld.online/images/items/pokeball.png'">
+            <div class="item-info">
+                <div class="item-name">${item.name}</div>
+                <div class="item-stock">Possui: ${item.qty.toLocaleString('pt-BR')}</div>
+            </div>
+            <div class="item-price-box">
+                <div class="item-price">$${item.price.toLocaleString('pt-BR')}</div>
+                <div class="item-subtotal hidden"></div>
+            </div>
+            <input type="number" class="item-input sell-qty-input" max="${item.qty}" min="0" value="0" ${item.isLocked ? 'disabled title="Bloqueado no jogo"' : ''}>
+            ${lockIcon}
+        </div>
+        `;
+    }).join('');
+    
+    updateSellStonesTotal();
+    
+    const listEl = document.getElementById('mark-sell-stones-list');
+    
+    listEl.querySelectorAll('.toggle-lock-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const itemName = btn.getAttribute('data-name');
+            const accountId = markAccountSelect.value;
+            const wvId = `webview-${accountId}`;
+            
+            let lockedItems = window.__piw_locks_cache ? JSON.parse(window.__piw_locks_cache[wvId] || '[]') : [];
+            const isCurrentlyLocked = lockedItems.includes(itemName);
+            
+            if (isCurrentlyLocked) {
+                lockedItems = lockedItems.filter(i => i !== itemName);
+                btn.style.color = '#475569';
+                btn.title = 'Clique para travar';
+            } else {
+                lockedItems.push(itemName);
+                btn.style.color = '#ef4444';
+                btn.title = 'Clique para destravar';
+            }
+            
+            if (!window.__piw_locks_cache) window.__piw_locks_cache = {};
+            window.__piw_locks_cache[wvId] = JSON.stringify(lockedItems);
+            
+            if (window.api && window.api.loadCreds) {
+                window.api.loadCreds().then(creds => {
+                    creds.__piw_locks = window.__piw_locks_cache;
+                    window.api.saveCreds(creds);
+                });
+            }
+            
+            const row = btn.closest('.mark-sell-item');
+            const cb = row.querySelector('.mark-sell-item-checkbox');
+            const inp = row.querySelector('.sell-qty-input');
+            
+            if (!isCurrentlyLocked) {
+                row.classList.add('locked');
+                cb.disabled = true;
+                cb.title = 'Bloqueado';
+                cb.checked = false;
+                inp.disabled = true;
+                inp.title = 'Bloqueado no jogo';
+                inp.value = 0;
+            } else {
+                row.classList.remove('locked');
+                cb.disabled = false;
+                cb.title = '';
+                inp.disabled = false;
+                inp.title = '';
+            }
+            inp.dispatchEvent(new Event('input'));
+        });
+    });
+
+    listEl.querySelectorAll('.mark-sell-item').forEach(row => {
+        row.addEventListener('click', (e) => {
+            if (row.classList.contains('locked')) return;
+            if (e.target.tagName.toLowerCase() === 'input' || e.target.closest('.toggle-lock-btn')) return;
+            const cb = row.querySelector('.mark-sell-item-checkbox');
+            const inp = row.querySelector('.sell-qty-input');
+            cb.checked = !cb.checked;
+            inp.value = cb.checked ? inp.getAttribute('max') : 0;
+            inp.dispatchEvent(new Event('input'));
+        });
+    });
+    
+    listEl.querySelectorAll('.mark-sell-item-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const row = e.target.closest('.mark-sell-item');
+            const inp = row.querySelector('.sell-qty-input');
+            inp.value = e.target.checked ? inp.getAttribute('max') : 0;
+            inp.dispatchEvent(new Event('input'));
+        });
+    });
+    
+    listEl.querySelectorAll('.sell-qty-input').forEach(inp => {
+        inp.addEventListener('input', () => {
+            let val = parseInt(inp.value);
+            const max = parseInt(inp.getAttribute('max'));
+            if (isNaN(val) || val < 0) val = 0;
+            if (val > max) val = max;
+            inp.value = val;
+            
+            const row = inp.closest('.mark-sell-item');
+            const cb = row.querySelector('.mark-sell-item-checkbox');
+            if (cb && !cb.disabled) {
+                cb.checked = (val > 0);
+            }
+            
+            if (val > 0) {
+                row.classList.add('selected');
+                const price = parseInt(row.getAttribute('data-price')) || 0;
+                const subtotal = row.querySelector('.item-subtotal');
+                subtotal.textContent = `+$${(price * val).toLocaleString('pt-BR')}`;
+                subtotal.classList.remove('hidden');
+            } else {
+                row.classList.remove('selected');
+                row.querySelector('.item-subtotal').classList.add('hidden');
+            }
+            
+            updateSellStonesTotal();
+            updateSellStonesSelectAllBtnState();
+        });
+    });
+    
+    const selectAllBtn = document.getElementById('mark-sell-stones-select-all-btn');
+    const newSelectAllBtn = selectAllBtn.cloneNode(true);
+    selectAllBtn.parentNode.replaceChild(newSelectAllBtn, selectAllBtn);
+    
+    newSelectAllBtn.addEventListener('click', () => {
+        const checkboxes = Array.from(listEl.querySelectorAll('.mark-sell-item-checkbox:not(:disabled)'));
+        if (checkboxes.length === 0) return;
+        
+        const allChecked = checkboxes.every(cb => cb.checked);
+        const newState = !allChecked;
+        
+        listEl.querySelectorAll('.mark-sell-item:not(.locked)').forEach(row => {
+            const cb = row.querySelector('.mark-sell-item-checkbox');
+            const inp = row.querySelector('.sell-qty-input');
+            cb.checked = newState;
+            inp.value = newState ? inp.getAttribute('max') : 0;
+            inp.dispatchEvent(new Event('input'));
+        });
+    });
+    updateSellStonesSelectAllBtnState();
+}
+
+function updateSellStonesSelectAllBtnState() {
+    const listEl = document.getElementById('mark-sell-stones-list');
+    const selectAllBtn = document.getElementById('mark-sell-stones-select-all-btn');
+    const checkboxes = Array.from(listEl.querySelectorAll('.mark-sell-item-checkbox:not(:disabled)'));
+    if (checkboxes.length === 0) return;
+    const allChecked = checkboxes.every(cb => cb.checked);
+    if (allChecked) {
+        selectAllBtn.textContent = 'Desmarcar Tudo';
+    } else {
+        selectAllBtn.textContent = 'Selecionar Tudo';
+    }
+}
+
+function updateSellStonesTotal() {
+    const listEl = document.getElementById('mark-sell-stones-list');
+    let total = 0;
+    let selectedCount = 0;
+    listEl.querySelectorAll('.mark-sell-item:not(.locked)').forEach(itemEl => {
+        const price = parseInt(itemEl.getAttribute('data-price')) || 0;
+        const inp = itemEl.querySelector('.sell-qty-input');
+        const qty = parseInt(inp.value) || 0;
+        total += (price * qty);
+        if (qty > 0) selectedCount++;
+    });
+    
+    markSellStonesTotal.textContent = total.toLocaleString('pt-BR');
+    markSellStonesBtn.disabled = (selectedCount === 0 || total <= 0);
+}
+
+markSellStonesBtn.addEventListener('click', async () => {
+    const accountId = markAccountSelect.value;
+    const wv = document.getElementById(`webview-${accountId}`);
+    if (!wv) return;
+    
+    const itemsToSell = [];
+    const listEl = document.getElementById('mark-sell-stones-list');
+    listEl.querySelectorAll('.mark-sell-item:not(.locked)').forEach(itemEl => {
+        const itemId = parseInt(itemEl.getAttribute('data-id'));
+        const qty = parseInt(itemEl.querySelector('.sell-qty-input').value) || 0;
+        if (qty > 0) itemsToSell.push({ itemId, qty });
+    });
+    
+    if (itemsToSell.length === 0) return;
+    
+    markSellStonesBtn.disabled = true;
+    markSellStonesBtn.textContent = 'Vendendo...';
+    
+    try {
+        const payloadStr = JSON.stringify(itemsToSell).replace(/'/g, "\\'");
+        const result = await wv.executeJavaScript(`window.markApi.sellStones(${payloadStr})`);
+        
+        if (result.success) {
+            if (result.gold !== undefined) {
+                markGoldAmount.textContent = Number(result.gold).toLocaleString('pt-BR');
+            }
+            await loadMarkData(accountId);
+        } else {
+            alert("Falha ao vender: " + result.error);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erro de comunicação ao vender.");
+    } finally {
+        markSellStonesBtn.textContent = 'Vender Selecionados';
     }
 });
 

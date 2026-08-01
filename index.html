@@ -150,6 +150,7 @@
         <div class="mark-tabs-container">
             <button class="mark-tab active" data-target="mark-catalog">Comprar</button>
             <button class="mark-tab" data-target="mark-sell">Vender Itens</button>
+            <button class="mark-tab" data-target="mark-sell-stones">Vender Stones</button>
         </div>
         
         <div id="mark-loading" class="hidden">Carregando catálogo...</div>
@@ -170,6 +171,21 @@
                     <span id="mark-sell-total">0</span>
                 </div>
                 <button id="mark-sell-btn" class="mark-footer-btn" disabled>Vender Selecionados</button>
+            </div>
+        </div>
+
+        <div class="mark-body hidden" id="mark-sell-stones">
+            <div id="mark-sell-stones-list">
+                <!-- Sell stones rendered dynamically here -->
+            </div>
+            <div class="mark-sell-footer">
+                <button id="mark-sell-stones-select-all-btn" class="mark-footer-btn">Selecionar Tudo</button>
+                <div class="mark-sell-summary">
+                    <span>Total:</span>
+                    <i data-lucide="circle-dollar-sign" width="14" height="14"></i>
+                    <span id="mark-sell-stones-total">0</span>
+                </div>
+                <button id="mark-sell-stones-btn" class="mark-footer-btn" disabled>Vender Selecionados</button>
             </div>
         </div>
     </div>
